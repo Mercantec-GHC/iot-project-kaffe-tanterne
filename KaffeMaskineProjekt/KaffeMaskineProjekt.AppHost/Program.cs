@@ -1,6 +1,13 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var apiService = builder.AddProject<Projects.KaffeMaskineProjekt_ApiService>("apiservice");
+var dbserver = builder.AddPostgres("KaffeDbServer");
+var db = dbserver.AddDatabase("KaffeDb");
+
+var apiService = builder.AddProject<Projects.KaffeMaskineProjekt_ApiService>("apiservice")
+    .WithReference(db)
+    .WaitFor(db);
+
+
 
 builder.AddProject<Projects.KaffeMaskineProjekt_Web>("webfrontend")
     .WithExternalHttpEndpoints()

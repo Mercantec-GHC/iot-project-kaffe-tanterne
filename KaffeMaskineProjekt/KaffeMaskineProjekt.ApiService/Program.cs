@@ -1,7 +1,13 @@
+using KaffeMaskineProject.Repository;
+using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
+
+// Add postgres database integration.
+builder.AddNpgsqlDbContext<KaffeDBContext>("KaffeDBServer");
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -17,6 +23,7 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
