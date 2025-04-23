@@ -1,8 +1,14 @@
-﻿public class Statistics
+﻿using KaffeMaskineProject.DomainModels.User;
+using KaffeMaskineProject.DomainModels.Recipe;
+
+namespace KaffeMaskineProject.DomainModels
 {
-    //Add recipeName
-    //Add userId
-    public int numberOfUses { get; set; }
-    
+    public class Statistics
+    {
+        public Recipe recipeName { get; set; } 
+        public User userId { get; set; }
+        public int numberOfUses { get; set; }
+
+    }
 }
 

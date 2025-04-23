@@ -1,6 +1,9 @@
-﻿public class Ingredient
+﻿namespace KaffeMaskineProject.DomainModels
 {
-    public int Id { get; set; }
-    public string name { get; set; }
+    public class Ingredient
+    {
+        public int Id { get; set; }
+        public string name { get; set; }
+    }
 }
 
