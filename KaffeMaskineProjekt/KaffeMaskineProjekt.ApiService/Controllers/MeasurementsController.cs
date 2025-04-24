@@ -24,17 +24,11 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         }
 
         // GET details
-        [HttpGet]
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var measurements = await _context.Measurements
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (measurements == null)
+            var measurements = await _context.Measurements.FindAsync(id);
+            if (measurements == null) 
             {
                 return NotFound();
             }

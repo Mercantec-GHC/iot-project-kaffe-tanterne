@@ -25,16 +25,10 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         }
 
         // GET details
-        [HttpGet]
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var statistics = await _context.Measurements
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var statistics = await _context.Statistics.FindAsync(id);
             if (statistics == null)
             {
                 return NotFound();
