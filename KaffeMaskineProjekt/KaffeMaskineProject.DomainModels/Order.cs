@@ -1,13 +1,10 @@
-﻿using KaffeMaskineProject.DomainModels.User;
-using KaffeMaskineProject.DomainModels.Recipe;
-
-namespace KaffeMaskineProject.DomainModels
+﻿namespace KaffeMaskineProject.DomainModels
 {
 	public class Order
 	{
-		public int orderNumber { get; set; }
-		public bool hasBeenServed { get; set; }
-		public User userId { get; set; } 
-		public Recipe recipeId { get; set; }
+		public int Id{ get; set; }
+		public bool HasBeenServed { get; set; }
+		public User User { get; set; } 
+		public Recipe Recipe { get; set; }
 	}
 }
