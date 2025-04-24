@@ -10,7 +10,7 @@ builder.Services.AddOpenTelemetry()
 
     .WithTracing(tracing => tracing.AddSource(Worker.ActivitySourceName));
 
-builder.AddNpgsqlDbContext<KaffeDBContext>("KaffeDBServer");
+builder.AddNpgsqlDbContext<KaffeDBContext>("KaffeDB");
 
 var host = builder.Build();
 host.Run();

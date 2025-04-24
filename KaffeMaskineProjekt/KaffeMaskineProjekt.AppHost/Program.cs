@@ -6,7 +6,7 @@ dbserver.WithPgAdmin();
 
 builder.AddProject<Projects.KaffeMaskineProjekt_MigrationService>("MigrationService")
     .WithReference(db)
-    .WaitFor(db);
+    .WaitFor(dbserver);
 
 var apiService = builder.AddProject<Projects.KaffeMaskineProjekt_ApiService>("apiservice")
     .WithReference(db)

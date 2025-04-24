@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Add postgres database integration.
-builder.AddNpgsqlDbContext<KaffeDBContext>("KaffeDBServer");
+builder.AddNpgsqlDbContext<KaffeDBContext>("KaffeDB");
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
