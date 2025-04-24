@@ -1,26 +1,27 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaffeMaskineProject.Repository;
 using KaffeMaskineProject.DomainModels;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 
 namespace KaffeMaskineProjekt.ApiService.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class MeasurementsController : Controller
+    public class StatisticsController : Controller
     {
         private readonly KaffeDBContext _context;
 
-        public MeasurementsController(KaffeDBContext context)
+        public StatisticsController(KaffeDBContext context)
         {
             _context = context;
         }
 
-        // GET: Measurements
+        // GET: Statistics
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Measurements.ToListAsync());
+            return Ok(await _context.Statistics.ToListAsync());
         }
 
         // GET details
@@ -32,42 +33,42 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
                 return NotFound();
             }
 
-            var measurements = await _context.Measurements
+            var statistics = await _context.Measurements
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (measurements == null)
+            if (statistics == null)
             {
                 return NotFound();
             }
 
-            return Ok(measurements);
+            return Ok(statistics);
         }
 
         // POST: Measurements
         [HttpPost]
-        public IActionResult Post([FromBody]Measurements measurements)
+        public IActionResult Post([FromBody] Statistics statistics)
         {
-            _context.Measurements.Add(measurements);
+            _context.Statistics.Add(statistics);
             _context.SaveChanges();
-            return Ok(measurements);
+            return Ok(statistics);
         }
 
         // PUT: Measurements
         [HttpPut]
-        public IActionResult Update([FromBody]Measurements measurements)
+        public IActionResult Update([FromBody] Statistics statistics)
         {
-            _context.Measurements.Update(measurements);
+            _context.Statistics.Update(statistics);
             _context.SaveChanges();
-            return Ok(measurements);
+            return Ok(statistics);
         }
 
         // DELETE: Measurements
         [HttpDelete]
         public async Task<IActionResult> Delete(int id)
         {
-            var measurements = await _context.Measurements.FindAsync(id);
-            _context.Measurements.Remove(measurements);
+            var statistics = await _context.Statistics.FindAsync(id);
+            _context.Statistics.Remove(statistics);
             _context.SaveChanges();
-            return Ok(measurements);
+            return Ok(statistics);
         }
     }
 }
