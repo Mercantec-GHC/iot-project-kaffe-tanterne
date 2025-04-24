@@ -20,6 +20,7 @@ namespace KaffeMaskineProject.Repository
         public DbSet<Statistics> Statistics { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<Measurements> Measurements { get; set; }
 
 
     }
