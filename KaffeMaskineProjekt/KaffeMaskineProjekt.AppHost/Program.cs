@@ -2,6 +2,11 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var dbserver = builder.AddPostgres("KaffeDbServer");
 var db = dbserver.AddDatabase("KaffeDb");
+dbserver.WithPgAdmin();
+
+builder.AddProject<Projects.KaffeMaskineProjekt_MigrationService>("MigrationService")
+    .WithReference(db)
+    .WaitFor(db);
 
 var apiService = builder.AddProject<Projects.KaffeMaskineProjekt_ApiService>("apiservice")
     .WithReference(db)

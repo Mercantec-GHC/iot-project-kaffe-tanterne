@@ -1,7 +1,7 @@
-﻿using KaffeMaskineProject.DomainModels;
+﻿using KaffeMaskineProjekt.DomainModels;
 using Microsoft.EntityFrameworkCore;
 
-namespace KaffeMaskineProject.Repository
+namespace KaffeMaskineProjekt.Repository
 {
     public class KaffeDBContext : DbContext
     {

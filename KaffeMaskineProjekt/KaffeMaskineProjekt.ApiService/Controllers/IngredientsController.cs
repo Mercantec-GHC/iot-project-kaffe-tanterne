@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using KaffeMaskineProject.Repository;
-using KaffeMaskineProject.DomainModels;
+using KaffeMaskineProjekt.Repository;
+using KaffeMaskineProjekt.DomainModels;
 
 namespace KaffeMaskineProjekt.ApiService.Controllers
 {

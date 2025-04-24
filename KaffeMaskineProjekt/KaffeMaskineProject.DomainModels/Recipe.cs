@@ -1,4 +1,4 @@
-﻿namespace KaffeMaskineProject.DomainModels
+﻿namespace KaffeMaskineProjekt.DomainModels
 {
 	public class Recipe
 	{

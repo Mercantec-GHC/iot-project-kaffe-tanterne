@@ -1,4 +1,4 @@
-using KaffeMaskineProject.Repository;
+using KaffeMaskineProjekt.Repository;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
