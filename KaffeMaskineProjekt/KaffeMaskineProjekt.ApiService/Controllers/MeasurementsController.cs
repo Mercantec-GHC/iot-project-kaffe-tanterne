@@ -44,7 +44,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         // POST: Measurements
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]Measurements measurements)
+        public IActionResult Create([FromBody]Measurements measurements)
         {
             _context.Measurements.Add(measurements);
             _context.SaveChanges();
@@ -53,7 +53,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         // PUT: Measurements
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody]Measurements measurements)
+        public IActionResult Update([FromBody]Measurements measurements)
         {
             _context.Measurements.Update(measurements);
             _context.SaveChanges();
