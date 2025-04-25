@@ -43,21 +43,42 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         //allows you to create an user
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Post([FromBody] User user)
+        public async Task<IActionResult> Create([FromBody] CreateUserModel user)
         {
-            _context.Add(user);
-            _context.SaveChanges();
-            return Ok(user);   
+            if (ModelState.IsValid && !(await _context.Users.AnyAsync(x => x.Name.ToLower().Trim() == user.Name.ToLower().Trim() && x.Password == user.Password)))
+            {
+                _context.Users.Add(user.ToUser());
+                await _context.SaveChangesAsync();
+
+                // Return the created ingredient with its ID
+                var createdUser = await _context.Users
+                    .Where(x => x.Name.ToLower().Trim() == user.Name.ToLower().Trim())
+                    .FirstOrDefaultAsync();
+
+                if (createdUser != null)
+                    return CreatedAtAction(nameof(Details), new { id = createdUser.Id }, createdUser);
+                else
+                    return NotFound();
+            }
+            return BadRequest(ModelState);
         }
 
         //allows you to edit an user
         [HttpPut]
-        public IActionResult Update([FromBody] User user)
+        public async Task<IActionResult> Edit(int id, [FromBody][Bind("id")] EditUserModel user)
         {
-            _context.Users.Update(user);
-            _context.SaveChanges();
-            return Ok(user);
+            if (ModelState.IsValid && !(await _context.Users.AnyAsync(x => x.Name.ToLower().Trim() == user.Name.ToLower().Trim() && x.Id != id && x.Password == user.Password)))
+            {
+                var existingUser = await _context.Users.FindAsync(id);
+                if (existingUser == null)
+                {
+                    return NotFound();
+                }
+                existingUser.Name = user.Name;
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            return BadRequest(ModelState);
         }
 
         //allows you to delete a selected user
@@ -74,5 +95,35 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             _context.SaveChanges();
             return Ok(user);
         }
+    }
+    public class CreateUserModel
+    {
+        public required string Name { get; set; }
+        public required string Password { get; set; }
+
+        public User ToUser()
+        {
+            return new User
+            {
+                Name = Name,
+                Password = Password
+            };
+        }
+    }
+    public class EditUserModel
+    {
+        public int Id { get; set; }
+        public required string Name { get; set; }
+        public required string Password { get; set; }
+        public User ToUser()
+        {
+            return new User
+            {
+                Id = Id,
+                Name = Name,
+                Password = Password
+            };
+        }
+
     }
 }
