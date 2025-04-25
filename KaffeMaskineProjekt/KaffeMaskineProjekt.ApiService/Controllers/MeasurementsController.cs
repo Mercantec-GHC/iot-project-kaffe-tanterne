@@ -47,9 +47,9 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         // PUT: Measurements
         [HttpPut]
-        public IActionResult Update([FromBody]Measurements measurements)
+        public IActionResult Update([FromBody]EditMeasurementsModel measurements)
         {
-            _context.Measurements.Update(measurements);
+            _context.Measurements.Update(measurements.ToMeasurements());
             _context.SaveChanges();
             return Ok(measurements);
         }
@@ -73,6 +73,22 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             {
                 return new Measurements 
                 {
+                    Value = Value,
+                    IngredientId = IngredientId
+                };
+            }
+        }
+        public class EditMeasurementsModel
+        {
+            public required int Id { get; set; }
+            public required int Value { get; set; }
+            public required int IngredientId { get; set; }
+
+            public Measurements ToMeasurements()
+            {
+                return new Measurements
+                {
+                    Id = Id,
                     Value = Value,
                     IngredientId = IngredientId
                 };

@@ -48,9 +48,9 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         // PUT: Measurements
         [HttpPut]
-        public IActionResult Update([FromBody] Statistics statistics)
+        public IActionResult Update([FromBody] EditStatisticsModel statistics)
         {
-            _context.Statistics.Update(statistics);
+            _context.Statistics.Update(statistics.ToStatistics());
             _context.SaveChanges();
             return Ok(statistics);
         }
@@ -75,6 +75,24 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             {
                 return new Statistics
                 {
+                    RecipeId = RecipeId,
+                    UserId = UserId,
+                    NumberOfUses = NumberOfUses
+                };
+            }
+        }
+        public class EditStatisticsModel
+        {
+            public required int Id { get; set; }
+            public required int RecipeId { get; set; }
+            public required int UserId { get; set; }
+            public required int NumberOfUses { get; set; }
+
+            public Statistics ToStatistics()
+            {
+                return new Statistics
+                {
+                    Id = Id,
                     RecipeId = RecipeId,
                     UserId = UserId,
                     NumberOfUses = NumberOfUses
