@@ -38,18 +38,18 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         // POST: Measurements
         [HttpPost]
-        public IActionResult Post([FromBody]Measurements measurements)
+        public IActionResult Post([FromBody]CreateMeasurementsModel measurements)
         {
-            _context.Measurements.Add(measurements);
-            _context.SaveChanges();
+            _context.Measurements.Add(measurements.ToMeasurements());
+            _context.SaveChangesAsync();
             return Ok(measurements);
         }
 
         // PUT: Measurements
         [HttpPut]
-        public IActionResult Update([FromBody]Measurements measurements)
+        public IActionResult Update([FromBody]EditMeasurementsModel measurements)
         {
-            _context.Measurements.Update(measurements);
+            _context.Measurements.Update(measurements.ToMeasurements());
             _context.SaveChanges();
             return Ok(measurements);
         }
@@ -62,6 +62,37 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             _context.Measurements.Remove(measurements);
             _context.SaveChanges();
             return Ok(measurements);
+        }
+
+        public class CreateMeasurementsModel
+        {
+            public required int Value { get; set; }
+            public required int IngredientId { get; set; }
+
+            public Measurements ToMeasurements()
+            {
+                return new Measurements 
+                {
+                    Value = Value,
+                    IngredientId = IngredientId
+                };
+            }
+        }
+        public class EditMeasurementsModel
+        {
+            public required int Id { get; set; }
+            public required int Value { get; set; }
+            public required int IngredientId { get; set; }
+
+            public Measurements ToMeasurements()
+            {
+                return new Measurements
+                {
+                    Id = Id,
+                    Value = Value,
+                    IngredientId = IngredientId
+                };
+            }
         }
     }
 }
