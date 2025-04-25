@@ -20,7 +20,12 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Orders.ToListAsync());
+            var orders = await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.Recipe)
+                .ToListAsync();
+
+            return Ok(orders);
         }
 
         //gets a specific order
@@ -43,21 +48,54 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         //allows you to create an order
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Post([FromBody] Order order)
+        public async Task<IActionResult> Post([FromBody] CreateOrderModel model)
         {
-            _context.Add(order);
-            _context.SaveChanges();
-            return Ok(order);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _context.Users.FindAsync(model.UserId);
+            var recipe = await _context.Recipes.FindAsync(model.RecipeId);
+
+            if (user == null || recipe == null)
+                return BadRequest("Invalid UserId or RecipeId, Try again.");
+
+            var exists = await _context.Orders.AnyAsync(x => x.User.Id == user.Id && x.Recipe.Id == recipe.Id && !x.HasBeenServed);
+
+            if (exists)
+                return Conflict("The order you are trying to make already exists.");
+
+            var newOrder = model.ToOrder(user, recipe);
+            _context.Orders.Add(newOrder);
+            await _context.SaveChangesAsync();
+
+            var createdOrder = await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.Recipe)
+                .FirstOrDefaultAsync(o => o.Id == newOrder.Id);
+
+            return CreatedAtAction(nameof(Details), new { id = newOrder.Id }, createdOrder);
         }
+
+
 
         //allows you to edit an order
         [HttpPut]
-        public IActionResult Update([FromBody] Order order)
+        public async Task<IActionResult> Update([FromBody] EditOrderModel model)
         {
-            _context.Orders.Update(order);
-            _context.SaveChanges();
-            return Ok(order);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _context.Users.FindAsync(model.UserId);
+            var recipe = await _context.Recipes.FindAsync(model.RecipeId);
+
+            if (user == null || recipe == null)
+                return BadRequest("Invalid UserId or RecipeId.");
+
+            var updatedOrder = model.ToOrder(user, recipe);
+            _context.Orders.Update(updatedOrder);
+            await _context.SaveChangesAsync();
+
+            return Ok(updatedOrder);
         }
 
         //allows you to delete a selected order
@@ -73,6 +111,40 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             _context.Orders.Remove(order);
             _context.SaveChanges();
             return Ok(order);
+        }
+    }
+    public class CreateOrderModel
+    {
+        public int UserId { get; set; }
+        public int RecipeId { get; set; }
+        public bool HasBeenServed { get; set; }
+
+        public Order ToOrder(User user, Recipe recipe)
+        {
+            return new Order
+            {
+                User = user,
+                Recipe = recipe,
+                HasBeenServed = HasBeenServed
+            };
+        }
+    }
+    public class EditOrderModel
+    {
+        public int Id { get; set; }
+        public int UserId { get; set; }
+        public int RecipeId { get; set; }
+        public bool HasBeenServed { get; set; }
+
+        public Order ToOrder(User user, Recipe recipe)
+        {
+            return new Order
+            {
+                Id = Id,
+                User = user,
+                Recipe = recipe,
+                HasBeenServed = HasBeenServed
+            };
         }
     }
 }
