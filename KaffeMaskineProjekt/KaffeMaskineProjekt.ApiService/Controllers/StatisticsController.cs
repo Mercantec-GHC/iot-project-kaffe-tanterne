@@ -39,18 +39,18 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         // POST: Measurements
         [HttpPost]
-        public IActionResult Post([FromBody] Statistics statistics)
+        public async Task<IActionResult> Post([FromBody] CreateStatisticsModel statistics)
         {
-            _context.Statistics.Add(statistics);
+            _context.Statistics.Add(statistics.ToStatistics());
             _context.SaveChanges();
             return Ok(statistics);
         }
 
         // PUT: Measurements
         [HttpPut]
-        public IActionResult Update([FromBody] Statistics statistics)
+        public IActionResult Update([FromBody] EditStatisticsModel statistics)
         {
-            _context.Statistics.Update(statistics);
+            _context.Statistics.Update(statistics.ToStatistics());
             _context.SaveChanges();
             return Ok(statistics);
         }
@@ -63,6 +63,41 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             _context.Statistics.Remove(statistics);
             _context.SaveChanges();
             return Ok(statistics);
+        }
+
+        public class CreateStatisticsModel
+        {
+            public required int RecipeId { get; set; }
+            public required int UserId { get; set; }
+            public required int NumberOfUses { get; set; }
+
+            public Statistics ToStatistics()
+            {
+                return new Statistics
+                {
+                    RecipeId = RecipeId,
+                    UserId = UserId,
+                    NumberOfUses = NumberOfUses
+                };
+            }
+        }
+        public class EditStatisticsModel
+        {
+            public required int Id { get; set; }
+            public required int RecipeId { get; set; }
+            public required int UserId { get; set; }
+            public required int NumberOfUses { get; set; }
+
+            public Statistics ToStatistics()
+            {
+                return new Statistics
+                {
+                    Id = Id,
+                    RecipeId = RecipeId,
+                    UserId = UserId,
+                    NumberOfUses = NumberOfUses
+                };
+            }
         }
     }
 }
