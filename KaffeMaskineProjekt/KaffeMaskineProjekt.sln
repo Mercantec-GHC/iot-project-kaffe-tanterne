@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KaffeMaskineProjekt.DomainM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KaffeMaskineProjekt.MigrationService", "KaffeMaskineProjekt.MigrationService\KaffeMaskineProjekt.MigrationService.csproj", "{024805D1-2E1E-4C9D-BD1C-454791D21A26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KaffeMaskineProjekt.DTO", "KaffeMaskineProjekt.DTO\KaffeMaskineProjekt.DTO.csproj", "{C720F5CB-067C-4375-B670-A8D47360423E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{024805D1-2E1E-4C9D-BD1C-454791D21A26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{024805D1-2E1E-4C9D-BD1C-454791D21A26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{024805D1-2E1E-4C9D-BD1C-454791D21A26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C720F5CB-067C-4375-B670-A8D47360423E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C720F5CB-067C-4375-B670-A8D47360423E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C720F5CB-067C-4375-B670-A8D47360423E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C720F5CB-067C-4375-B670-A8D47360423E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

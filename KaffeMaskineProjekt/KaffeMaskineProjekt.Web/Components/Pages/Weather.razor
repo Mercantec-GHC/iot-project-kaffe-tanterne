@@ -2,7 +2,7 @@
 @attribute [StreamRendering(true)]
 @attribute [OutputCache(Duration = 5)]
 
-@inject WeatherApiClient WeatherApi
+@inject KaffeApiClient WeatherApi
 
 <PageTitle>Weather</PageTitle>
 
@@ -41,9 +41,31 @@ else
 
 @code {
     private WeatherForecast[]? forecasts;
+    private static readonly string[] Summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await WeatherApi.GetWeatherAsync();
+        forecasts = GetForecasts();
+    }
+
+    private WeatherForecast[]? GetForecasts()
+    {
+        // Generate dummy data for demonstration purposes
+        var rng = new Random();
+        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        {
+            Date = DateTime.Now.AddDays(index),
+            TemperatureC = rng.Next(-20, 55),
+            Summary = Summaries[rng.Next(Summaries.Length)]
+        }).ToArray();
+    }
+
+    record WeatherForecast
+    {
+        public DateTime Date { get; set; }
+        public int TemperatureC { get; set; }
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        public string? Summary { get; set; }
+
     }
 }
