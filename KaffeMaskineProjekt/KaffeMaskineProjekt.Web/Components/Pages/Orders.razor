@@ -1,0 +1,43 @@
+﻿@page "/orders"
+
+<PageTitle>Orders</PageTitle>
+<h3>Orders</h3>
+
+<div class="orderSelect">
+    <label>Order Number: 36</label>
+    <br>
+    <label>Is order served?</label>
+    <input type="checkbox" id="yes" name="yes" value="yes"/>
+    <br>
+    <label>who ordered this?</label>
+    <select name="users" id="users">
+        <optgroup label="admins">
+            <option value="admin1">Jørgen</option>
+            <option value="admin2">Jens</option>
+            <option value="admin3">Jacob</option>
+        </optgroup>
+        <optgroup label="peasants">
+            <option value="peasant1">Børge</option>
+            <option value="peasant2">Benny</option>
+            <option value="peasant1">Bob</option>
+        </optgroup>
+    </select>
+    <br>
+    <label>what recipe was used?</label>
+    <select name="recipes" id="recipes">
+        <optgroup label="coffee lovers">
+            <option value="blackCoffee">Black coffee</option>
+            <option value="espresso">Espresso</option>
+            <option value="cappuccino">Cappuccino</option>
+            <option value="latte">Latte</option>
+        </optgroup>
+        <optgroup label="tea drinkers">
+            <option value="chai">Chai</option>
+        </optgroup>
+        <optgroup label="Special ones">
+            <option value="chocolateMilk">Chocolate milk</option>
+            <option value="hotChocolate">Hot chocolate</option>
+            <option value="hotWater">Hot water</option>
+        </optgroup>
+    </select>
+</div>
