@@ -40,6 +40,7 @@ public class KaffeApiClient(HttpClient httpClient)
     /// <returns>Created <see cref="IngredientDTO"/> or null on failure.</returns>
     public async Task<IngredientDTO?> CreateIngredientAsync(CreateIngredientModel model, CancellationToken cancellationToken = default)
     {
+        Console.WriteLine($"Creating ingredient: {model.Name}");
         var response = await httpClient.PostAsJsonAsync("api/Ingredients/Create", model, cancellationToken);
         if (!response.IsSuccessStatusCode) return null;
         return await response.Content.ReadFromJsonAsync<IngredientDTO>(cancellationToken: cancellationToken);

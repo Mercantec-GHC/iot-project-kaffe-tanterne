@@ -1,0 +1,111 @@
+﻿@page "/recipes"
+@rendermode InteractiveServer
+@inject KaffeApiClient KaffeApiClient
+@using KaffeMaskineProjekt.DTO
+
+<h3>Recipes</h3>
+
+@if (ingredients.Count < 1)
+{
+    <p>No ingredients exist</p>
+}
+else
+{
+    <p>Add recipe</p>
+    <InputText @bind-Value="@newRecipe.Name" placeholder="Recipe Name" />
+    <InputSelect @bind-Value="selectedIngredient">
+        @foreach (var ingredient in ingredients)
+        {
+            <option value="@ingredient.Id">@ingredient.Name</option>
+        }
+    </InputSelect>
+    <InputNumber @bind-Value="selectedIngredientAmount" placeholder="Amount" min="1" />
+    <button type="button" @onclick="@(async () => await AddIngredientToRecipe(selectedIngredient))">Add Ingredient</button>
+    <p>Selected Ingredients:</p>
+    <ul>
+        @foreach (var ingredient in selectedIngredients.Keys)
+        {
+            <li>@ingredient.Name - @selectedIngredients.First(x => x.Key.Id == ingredient.Id).Value - <span onclick="@(async () => await RemoveIngredientFromRecipe(ingredient))" style="text-decoration:underline;text-decoration-color:red;">Remove</span></li>
+        }
+    </ul>
+    <button type="button" @onclick="AddRecipe">Add</button>
+
+
+
+    <p>All Recipes:</p>
+    <ul>
+        @foreach (var recipe in recipes)
+        {
+            <li>
+                <p>@recipe.Name - <span onclick="@(async () => await DeleteRecipe(recipe))" style="text-decoration:underline;text-decoration-color:red;">Delete</span></p> 
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private List<IngredientDTO> ingredients = new List<IngredientDTO>();
+    private List<RecipeDTO> recipes = new List<RecipeDTO>();
+
+    private int selectedIngredient = 1; // Default to the first ingredient
+    private int selectedIngredientAmount = 1; // Default amount for the selected ingredient
+    private Dictionary<IngredientDTO, int> selectedIngredients = new Dictionary<IngredientDTO, int>();
+
+    private CreateRecipeModel newRecipe = new CreateRecipeModel() { Name = string.Empty };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshPage();
+    }
+
+    private async Task RefreshPage()
+    {
+        recipes = await KaffeApiClient.GetRecipesAsync();
+        ingredients = await KaffeApiClient.GetIngredientsAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AddRecipe()
+    {
+        if (!string.IsNullOrWhiteSpace(newRecipe.Name))
+        {
+            newRecipe.Ingredients = selectedIngredients.ToDictionary(kvp => kvp.Key.Id, kvp => kvp.Value);
+            var created = await KaffeApiClient.CreateRecipeAsync(newRecipe);
+            newRecipe = new CreateRecipeModel() { Name = string.Empty }; // Reset the input field
+            selectedIngredient = 1;
+            selectedIngredientAmount = 1;
+            selectedIngredients = new Dictionary<IngredientDTO, int>();
+            await RefreshPage(); // Refresh the recipe list
+        }
+    }
+
+    private async Task DeleteRecipe(RecipeDTO recipe)
+    {
+        await KaffeApiClient.DeleteRecipeAsync(recipe.Id);
+
+        await RefreshPage(); // Refresh the ingredient list
+    }
+
+    private async Task AddIngredientToRecipe(int ingredientId)
+    {
+        if (selectedIngredients.ContainsKey(ingredients.First(i => i.Id == ingredientId)))
+        {
+            selectedIngredients[ingredients.First(i => i.Id == ingredientId)] += selectedIngredientAmount;
+        }
+        else
+        {
+            var ingredient = ingredients.First(i => i.Id == ingredientId);
+            selectedIngredients.Add(ingredient, selectedIngredientAmount);
+        }
+    }
+
+    private async Task RemoveIngredientFromRecipe(IngredientDTO ingredient)
+    {
+        if (selectedIngredients.ContainsKey(ingredient))
+        {
+            selectedIngredients.Remove(ingredient);
+        }
+
+        await InvokeAsync(StateHasChanged); // Ensure the UI is updated
+    }
+}

@@ -1,0 +1,50 @@
+﻿@page "/ingredients"
+@rendermode InteractiveServer
+@inject KaffeApiClient KaffeApiClient
+@using KaffeMaskineProjekt.DTO
+
+<h3>Ingredients</h3>
+
+<p>Add ingredient</p>
+<InputText @bind-Value="@newIngredientName" placeholder="Ingredient Name" />
+<button type="button" @onclick="AddIngredient">Add</button>
+
+<p>All Ingredients:</p>
+<ul>
+    @foreach (var ingredient in ingredients)
+    {
+        <li>
+            <p>@ingredient.Name - <span onclick="@(async () => await DeleteIngredient(ingredient))" style="text-decoration:underline;text-decoration-color:red;">Delete</span></p> 
+        </li>
+    }
+</ul>
+
+@code {
+
+    private List<IngredientDTO> ingredients = new List<IngredientDTO>();
+    private string newIngredientName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ingredients = await KaffeApiClient.GetIngredientsAsync();
+    }
+
+    private async Task AddIngredient()
+    {
+        if (!string.IsNullOrWhiteSpace(newIngredientName))
+        {
+            var created = await KaffeApiClient.CreateIngredientAsync(new CreateIngredientModel{Name = newIngredientName});
+
+            ingredients = await KaffeApiClient.GetIngredientsAsync(); // Refresh the ingredient list
+            await InvokeAsync(StateHasChanged); // Ensure the UI is updated
+        }
+    }
+
+    private async Task DeleteIngredient(IngredientDTO ingredient)
+    {
+        await KaffeApiClient.DeleteIngredientAsync(ingredient.Id);
+        ingredients = await KaffeApiClient.GetIngredientsAsync(); // Refresh the ingredient list
+        await InvokeAsync(StateHasChanged); // Ensure the UI is updated
+    }
+
+}
