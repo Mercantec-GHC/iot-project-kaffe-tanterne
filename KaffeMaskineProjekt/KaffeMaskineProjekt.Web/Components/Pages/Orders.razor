@@ -1,43 +1,61 @@
 ﻿@page "/orders"
+@rendermode InteractiveServer
+@inject KaffeApiClient KaffeApiClient
+@using KaffeMaskineProjekt.DTO
+@using KaffeMaskineProjekt.DomainModels
 
-<PageTitle>Orders</PageTitle>
 <h3>Orders</h3>
 
-<div class="orderSelect">
-    <label>Order Number: 36</label>
-    <br>
-    <label>Is order served?</label>
-    <input type="checkbox" id="yes" name="yes" value="yes"/>
-    <br>
-    <label>who ordered this?</label>
-    <select name="users" id="users">
-        <optgroup label="admins">
-            <option value="admin1">Jørgen</option>
-            <option value="admin2">Jens</option>
-            <option value="admin3">Jacob</option>
-        </optgroup>
-        <optgroup label="peasants">
-            <option value="peasant1">Børge</option>
-            <option value="peasant2">Benny</option>
-            <option value="peasant1">Bob</option>
-        </optgroup>
-    </select>
-    <br>
-    <label>what recipe was used?</label>
-    <select name="recipes" id="recipes">
-        <optgroup label="coffee lovers">
-            <option value="blackCoffee">Black coffee</option>
-            <option value="espresso">Espresso</option>
-            <option value="cappuccino">Cappuccino</option>
-            <option value="latte">Latte</option>
-        </optgroup>
-        <optgroup label="tea drinkers">
-            <option value="chai">Chai</option>
-        </optgroup>
-        <optgroup label="Special ones">
-            <option value="chocolateMilk">Chocolate milk</option>
-            <option value="hotChocolate">Hot chocolate</option>
-            <option value="hotWater">Hot water</option>
-        </optgroup>
-    </select>
-</div>
+<p>Create a new order:</p>
+
+<select @bind="selectedRecipeId">
+    @foreach (var recipe in recipes)
+    {
+        <option value="@recipe.Id">@recipe.Name</option>
+    }
+</select>
+
+<button type="button" @onclick="CreateOrder">Create Order</button>
+
+<p>Current Orders:</p>
+<ul>
+    @foreach (var order in orders)
+    {
+        <li>
+            <p>
+                Order for: @order.User.Name - Recipe: @order.Recipe.Name -
+                <span style="text-decoration:underline;text-decoration-color:red;" @onclick="@(async () => await DeleteOrder(order.Id))">Delete</span>
+            </p>
+        </li>
+    }
+</ul>
+
+@code {
+    private List<Order> orders = new List<Order>();
+    private List<RecipeDTO> recipes = new List<RecipeDTO>();
+    private int selectedRecipeId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        orders = await KaffeApiClient.GetOrdersAsync();
+        recipes = await KaffeApiClient.GetRecipesAsync();
+    }
+
+    private async Task CreateOrder()
+    {
+        if (selectedRecipeId > 0)
+        {
+            var order = await KaffeApiClient.CreateOrderAsync(selectedRecipeId);
+            if (order != null)
+            {
+                orders = await KaffeApiClient.GetOrdersAsync(); // Refresh the order list
+            }
+        }
+    }
+
+    private async Task DeleteOrder(int orderId)
+    {
+        await KaffeApiClient.DeleteOrderAsync(orderId);
+        orders = await KaffeApiClient.GetOrdersAsync(); // Refresh the order list
+    }
+}

@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
 using KaffeMaskineProjekt.DTO;
+using KaffeMaskineProjekt.DomainModels;
+using static KaffeMaskineProjekt.Web.Components.Pages.Orders;
 
 namespace KaffeMaskineProjekt.Web;
 
@@ -17,7 +19,7 @@ public class KaffeApiClient(HttpClient httpClient)
     /// <returns>List of <see cref="IngredientDTO"/>.</returns>
     public async Task<List<IngredientDTO>> GetIngredientsAsync(CancellationToken cancellationToken = default)
     {
-        return await httpClient.GetFromJsonAsync<List<IngredientDTO>>("api/Ingredients/Index", cancellationToken) 
+        return await httpClient.GetFromJsonAsync<List<IngredientDTO>>("api/Ingredients/Index", cancellationToken)
                ?? new List<IngredientDTO>();
     }
 
@@ -134,4 +136,32 @@ public class KaffeApiClient(HttpClient httpClient)
         return response.IsSuccessStatusCode;
     }
     #endregion
+    public async Task<User?> LoginAsync(string name, string password, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PostAsJsonAsync("api/User/Login", new { Name = name, Password = password }, cancellationToken);
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<User>(cancellationToken);
+        }
+        return null;
+    }
+    public async Task<List<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
+    {
+        return await httpClient.GetFromJsonAsync<List<Order>>("api/Orders/Index", cancellationToken)
+               ?? new List<Order>();
+    }
+
+    public async Task<Order?> CreateOrderAsync(int recipeId, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PostAsJsonAsync("api/Orders/Create", new { RecipeId = recipeId }, cancellationToken);
+        if (!response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadFromJsonAsync<Order>(cancellationToken);
+    }
+
+    public async Task<bool> DeleteOrderAsync(int orderId, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.DeleteAsync($"api/Orders/Delete/{orderId}", cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
 }
