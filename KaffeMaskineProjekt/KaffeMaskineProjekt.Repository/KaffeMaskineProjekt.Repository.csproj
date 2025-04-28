@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KaffeMaskineProject.DomainModels\KaffeMaskineProjekt.DomainModels.csproj" />
+    <ProjectReference Include="..\KaffeMaskineProjekt.DomainModels\KaffeMaskineProjekt.DomainModels.csproj" />
   </ItemGroup>
 
 </Project>
