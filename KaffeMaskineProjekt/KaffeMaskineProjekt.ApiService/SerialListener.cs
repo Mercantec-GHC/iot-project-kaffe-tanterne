@@ -7,7 +7,7 @@ class SerialListener
     static SerialPort _serialPort;
     static HttpClient _client = new HttpClient();
 
-    static async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
         _serialPort = new SerialPort("COM3", 9600);
         _serialPort.DataReceived += SerialDataReceived;
@@ -17,13 +17,22 @@ class SerialListener
         await Task.Delay(-1);
     }
 
-    private static async void SerialDataReceived(object sender, SerialDataReceivedEventArgs e)
+    public static async void SerialDataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         string data = _serialPort.ReadLine().Trim();
         if (data == "Pressed")
         {
-            await _client.PostAsync("https://localhost:7134/api/Measurements/PostButtonPress", new StringContent(""));
-            Console.WriteLine("Button press sent to API.");
+            int orderId = 1;
+            var response = await _client.PutAsync($"https://localhost:7134/api/Orders/ButtonServe/{orderId}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Button press sent to API.");
+            }
+            else
+            {
+                Console.WriteLine($"API error: {response.StatusCode}");
+            }
         }
     }
 }

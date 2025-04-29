@@ -64,13 +64,6 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             return Ok(measurements);
         }
 
-        [HttpPost]
-        public IActionResult PostButtonPress()
-        {
-            Console.WriteLine("Button pressed");
-            return Ok();
-        }
-
         public class CreateMeasurementsModel
         {
             public required int Value { get; set; }

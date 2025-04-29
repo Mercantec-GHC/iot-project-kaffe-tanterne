@@ -112,6 +112,24 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             _context.SaveChanges();
             return Ok(order);
         }
+
+        //Change HasBeenServed with button click
+        [HttpPut("{id}")]
+        public async Task<IActionResult> ButtonServe(int id)
+        {
+            var order = await _context.Orders
+                .Where(o => o.Id == id && o.HasBeenServed == false)
+                .FirstOrDefaultAsync();
+
+            if (id==null)
+            {
+                return NotFound();
+            }
+
+            order.HasBeenServed = true;
+            await _context.SaveChangesAsync();
+            return Ok(order);
+        }
     }
     public class CreateOrderModel
     {
