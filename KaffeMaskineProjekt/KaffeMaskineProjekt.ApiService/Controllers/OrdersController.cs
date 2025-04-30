@@ -48,7 +48,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         //allows you to create an order
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateOrderModel model)
+        public async Task<IActionResult> Create([FromBody] CreateOrderModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -64,7 +64,10 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             if (exists)
                 return Conflict("The order you are trying to make already exists.");
 
-            var newOrder = model.ToOrder(user, recipe);
+            var newOrder = model.ToOrder();
+            newOrder.User = user;
+            newOrder.Recipe = recipe;
+
             _context.Orders.Add(newOrder);
             await _context.SaveChangesAsync();
 
@@ -75,6 +78,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
             return CreatedAtAction(nameof(Details), new { id = newOrder.Id }, createdOrder);
         }
+
 
 
 
@@ -119,12 +123,12 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         public int RecipeId { get; set; }
         public bool HasBeenServed { get; set; }
 
-        public Order ToOrder(User user, Recipe recipe)
+        public Order ToOrder()
         {
             return new Order
             {
-                User = user,
-                Recipe = recipe,
+                UserId = UserId,
+                RecipeId = RecipeId,
                 HasBeenServed = HasBeenServed
             };
         }

@@ -8,12 +8,21 @@
 
 <p>Create a new order:</p>
 
-<select @bind="selectedRecipeId">
+<label for="recipeSelect">Select Recipe:</label>
+<InputSelect id="recipeSelect" @bind-Value="selectedRecipeId">
     @foreach (var recipe in recipes)
     {
         <option value="@recipe.Id">@recipe.Name</option>
     }
-</select>
+</InputSelect>
+
+<label for="userSelect">Select User:</label>
+<InputSelect id="userSelect" @bind-Value="selectedUserId">
+    @foreach (var user in users)
+    {
+        <option value="@user.Id">@user.Name</option>
+    }
+</InputSelect>
 
 <button type="button" @onclick="CreateOrder">Create Order</button>
 
@@ -33,19 +42,29 @@
 @code {
     private List<Order> orders = new List<Order>();
     private List<RecipeDTO> recipes = new List<RecipeDTO>();
+    private List<User> users = new List<User>();
     private int selectedRecipeId;
+    private int selectedUserId;
 
     protected override async Task OnInitializedAsync()
     {
         orders = await KaffeApiClient.GetOrdersAsync();
         recipes = await KaffeApiClient.GetRecipesAsync();
+        users = await KaffeApiClient.GetUsersAsync(); // Fetch users
     }
 
     private async Task CreateOrder()
     {
-        if (selectedRecipeId > 0)
+        if (selectedRecipeId > 0 && selectedUserId > 0)
         {
-            var order = await KaffeApiClient.CreateOrderAsync(selectedRecipeId);
+            var orderModel = new KaffeMaskineProjekt.DTO.CreateOrderModel
+                {
+                    RecipeId = selectedRecipeId,
+                    UserId = selectedUserId,
+                    HasBeenServed = false // Default value
+                };
+
+            var order = await KaffeApiClient.CreateOrderAsync(orderModel);
             if (order != null)
             {
                 orders = await KaffeApiClient.GetOrdersAsync(); // Refresh the order list

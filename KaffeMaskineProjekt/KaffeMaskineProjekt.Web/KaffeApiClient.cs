@@ -151,9 +151,9 @@ public class KaffeApiClient(HttpClient httpClient)
                ?? new List<Order>();
     }
 
-    public async Task<Order?> CreateOrderAsync(int recipeId, CancellationToken cancellationToken = default)
+    public async Task<Order?> CreateOrderAsync(CreateOrderModel model, CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.PostAsJsonAsync("api/Orders/Create", new { RecipeId = recipeId }, cancellationToken);
+        var response = await httpClient.PostAsJsonAsync("api/Orders/Create", model, cancellationToken);
         if (!response.IsSuccessStatusCode) return null;
         return await response.Content.ReadFromJsonAsync<Order>(cancellationToken);
     }
@@ -162,6 +162,11 @@ public class KaffeApiClient(HttpClient httpClient)
     {
         var response = await httpClient.DeleteAsync($"api/Orders/Delete/{orderId}", cancellationToken);
         return response.IsSuccessStatusCode;
+    }
+    public async Task<List<User>> GetUsersAsync(CancellationToken cancellationToken = default)
+    {
+        return await httpClient.GetFromJsonAsync<List<User>>("api/User/Index", cancellationToken)
+               ?? new List<User>();
     }
 
 }
