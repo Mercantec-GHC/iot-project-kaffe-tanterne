@@ -136,15 +136,20 @@ public class KaffeApiClient(HttpClient httpClient)
         return response.IsSuccessStatusCode;
     }
     #endregion
-    public async Task<User?> LoginAsync(string name, string password, CancellationToken cancellationToken = default)
+    // Login
+    #region Login
+    public async Task<User?> LoginAsync(LoginModel model, CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.PostAsJsonAsync("api/User/Login", new { Name = name, Password = password }, cancellationToken);
+        var response = await httpClient.PostAsJsonAsync("api/User/Login", model, cancellationToken);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<User>(cancellationToken);
         }
         return null;
     }
+    #endregion
+    // Orders
+    #region Orders
     public async Task<List<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
         return await httpClient.GetFromJsonAsync<List<Order>>("api/Orders/Index", cancellationToken)
@@ -168,5 +173,5 @@ public class KaffeApiClient(HttpClient httpClient)
         return await httpClient.GetFromJsonAsync<List<User>>("api/User/Index", cancellationToken)
                ?? new List<User>();
     }
-
+    #endregion
 }
