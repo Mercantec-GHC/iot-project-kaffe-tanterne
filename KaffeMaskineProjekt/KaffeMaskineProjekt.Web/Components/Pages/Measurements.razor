@@ -1,11 +1,14 @@
 ﻿@page "/measurements"
+@rendermode InteractiveServer
+@inject KaffeApiClient KaffeApiClient
+@using KaffeMaskineProjekt.DTO
 
 <h3>Measurements</h3>
 
 <PageTitle>Measurements</PageTitle>
 <div class="uploadContainer">
     <label>Coffee: </label>
-    <input type="text" id="coffee" name="coffee"/>
+    <InputText @bind-Value="@newMeasurementValue" placeholder="Ingredient Name" />
     <label> Grams</label>
     <br />
     <label>Water: </label>
@@ -18,5 +21,16 @@
 </div>
 
 @code {
+    private List<MeasurementsDTO> measurements = new List<MeasurementsDTO>();
+    private int newMeasurementValue;
 
+    protected override async Task OnInitializedAsync()
+    {
+        measurements = await KaffeApiClient.GetMeasurementsAsync();
+    }
+
+    private async Task AddMeasurement()
+    {
+        var created = await KaffeApiClient.CreateMeasurementsAsync(new CreateMeasurementsModel { Name = newMeasurementValue });
+    }
 }
