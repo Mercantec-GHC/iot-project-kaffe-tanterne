@@ -2,35 +2,54 @@
 @rendermode InteractiveServer
 @inject KaffeApiClient KaffeApiClient
 @using KaffeMaskineProjekt.DTO
+@using KaffeMaskineProjekt.DomainModels
 
 <h3>Measurements</h3>
 
 <PageTitle>Measurements</PageTitle>
 <div class="uploadContainer">
-    <label>Coffee: </label>
-    <InputText @bind-Value="@newMeasurementValue" placeholder="Ingredient Name" />
-    <label> Grams</label>
-    <br />
-    <label>Water: </label>
-    <input type="text" id="water" name="water" />
-    <label> Milliliters</label>
+    <label>Ingredient: </label>
+    <InputSelect id="ingridientSelect" @bind-Value="selectedIngredientId">
+        @foreach (var ingredient in ingredients)
+        {
+            <option value="@ingredient.Id">@ingredient.Name</option>
+        }
+    </InputSelect>
+    <label>Value: </label>
+    <InputNumber @bind-Value="@newMeasurementValue" placeholder="Ingredient Name" />
 </div>
 <br />
 <div>
-    <button type="submit">Submit</button>
+    <button type="button" @onclick="AddMeasurement">Add Measurement</button>
 </div>
 
 @code {
     private List<MeasurementsDTO> measurements = new List<MeasurementsDTO>();
+    private List<IngredientDTO> ingredients = new List<IngredientDTO>();
+    private int selectedIngredientId;
     private int newMeasurementValue;
 
     protected override async Task OnInitializedAsync()
     {
+        ingredients = await KaffeApiClient.GetIngredientsAsync();
         measurements = await KaffeApiClient.GetMeasurementsAsync();
     }
 
     private async Task AddMeasurement()
     {
-        var created = await KaffeApiClient.CreateMeasurementsAsync(new CreateMeasurementsModel { Name = newMeasurementValue });
+        if (selectedIngredientId > 0 && newMeasurementValue > 0)
+        {
+            var created = await KaffeApiClient.CreateMeasurementsAsync(new CreateMeasurementsModel { Value = newMeasurementValue, IngredientId = selectedIngredientId });
+            measurements = await KaffeApiClient.GetMeasurementsAsync();
+            await InvokeAsync(StateHasChanged);
+        }
     }
+
+    private async Task DeleteMeasurement(int measurementId)
+    {
+        await KaffeApiClient.DeleteMeasurementsAsync(measurementId);
+        measurements = await KaffeApiClient.GetMeasurementsAsync();
+    }
+
+
 }
