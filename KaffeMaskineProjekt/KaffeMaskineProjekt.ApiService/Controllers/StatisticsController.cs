@@ -21,7 +21,12 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Statistics.ToListAsync());
+            var statistics = await _context.Statistics
+                .Include(s => s.Recipe)
+                .Include(s => s.User)
+                .ToListAsync();
+
+            return Ok(statistics);
         }
 
         // GET details
