@@ -1,0 +1,21 @@
+@using KaffeMaskineProjekt.DTO
+
+@if (Ingredient is null)
+{
+    <div class="ingredient-card">
+        <h4>Not found</h4>
+        <button disabled>Delete</button>
+    </div>
+}
+else
+{
+    <div class="ingredient-card">
+        <h4>@Ingredient.Name</h4>
+        <button @onclick="@(() => OnDeleteIngredient.InvokeAsync(Ingredient))">Delete</button>
+    </div>
+}
+
+@code {
+    [Parameter] public IngredientDTO? Ingredient { get; set; }
+    [Parameter] public EventCallback<IngredientDTO> OnDeleteIngredient { get; set; } 
+}
