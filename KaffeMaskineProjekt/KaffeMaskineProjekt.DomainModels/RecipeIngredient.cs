@@ -8,6 +8,6 @@
         public Ingredient Ingredient { get; set; } 
         public Recipe Recipe { get; set; } 
         public int Amount { get; set; } 
-        public string UnitOfMeasurement { get; set; }
+        //public string UnitOfMeasurement { get; set; }
     }
 }

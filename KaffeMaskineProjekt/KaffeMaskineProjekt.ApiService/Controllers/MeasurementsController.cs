@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaffeMaskineProjekt.Repository;
 using KaffeMaskineProjekt.DomainModels;
+using System.Threading.Tasks;
 
 namespace KaffeMaskineProjekt.ApiService.Controllers
 {
@@ -20,7 +21,11 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Measurements.ToListAsync());
+            var measurements = await _context.Measurements
+                .Include(m => m.Ingredient)
+                .ToListAsync();
+
+            return Ok(measurements);
         }
 
         // GET details
@@ -38,10 +43,13 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         // POST: Measurements
         [HttpPost]
-        public IActionResult Create([FromBody]CreateMeasurementsModel measurements)
+        public async Task<IActionResult> Create([FromBody]CreateMeasurementsModel measurements)
         {
-            _context.Measurements.Add(measurements.ToMeasurements());
-            _context.SaveChangesAsync();
+            var ingredient = await _context.Ingredients.FindAsync(measurements.IngredientId);
+
+            var newMeasurement = measurements.ToMeasurements(ingredient);
+            _context.Measurements.Add(newMeasurement);
+            await _context.SaveChangesAsync();
             return Ok(measurements);
         }
 
@@ -55,13 +63,18 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         }
 
         // DELETE: Measurements
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var measurements = await _context.Measurements.FindAsync(id);
+            if (measurements == null)
+            {
+                return NotFound(new { Message = "Measurement not found." });
+            }
+
             _context.Measurements.Remove(measurements);
-            _context.SaveChanges();
-            return Ok(measurements);
+            await _context.SaveChangesAsync(); // Ensure SaveChangesAsync is awaited
+            return Ok(new { Message = "Measurement deleted successfully." });
         }
 
         public class CreateMeasurementsModel
@@ -69,12 +82,12 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             public required int Value { get; set; }
             public required int IngredientId { get; set; }
 
-            public Measurements ToMeasurements()
+            public Measurements ToMeasurements(Ingredient ingredient)
             {
                 return new Measurements 
                 {
                     Value = Value,
-                    IngredientId = IngredientId
+                    Ingredient = ingredient
                 };
             }
         }

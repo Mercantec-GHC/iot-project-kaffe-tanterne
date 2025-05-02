@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using KaffeMaskineProjekt.DTO;
-
+using KaffeMaskineProjekt.DomainModels;
 namespace KaffeMaskineProjekt.Web;
 
 /// <summary>

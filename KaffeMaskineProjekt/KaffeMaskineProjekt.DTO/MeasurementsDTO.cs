@@ -8,10 +8,11 @@ namespace KaffeMaskineProjekt.DTO
 {
     public class MeasurementsDTO
     {
-        public required int Id { get; set; }
-        public DateTime Time { get; set; }
+        public int Id { get; set; }
+        public DateTime Time { get; set; } = DateTime.Now.ToUniversalTime();
         public required int Value { get; set; }
         public required int IngredientId { get; set; }
+        public IngredientDTO Ingredient { get; set; }
     }
 
     public class CreateMeasurementsModel
