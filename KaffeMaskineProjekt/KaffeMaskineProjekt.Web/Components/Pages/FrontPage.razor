@@ -1,0 +1,26 @@
+@page "/"
+@rendermode InteractiveServer
+@inject KaffeApiClient KaffeApiClient
+@using KaffeMaskineProjekt.DTO
+@using KaffeMaskineProjekt.Web.Components.Common
+
+<h3>Welcome to the Coffee Machine</h3>
+
+<p>Explore our recipes:</p>
+<CardList Items="recipes">
+    <RecipeCard Recipe="@context" />
+</CardList>
+
+@code {
+    private List<RecipeDTO> recipes = new List<RecipeDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        recipes = await KaffeApiClient.GetRecipesAsync();
+    }
+
+    private void HandleSelectRecipe(RecipeDTO recipe)
+    {
+        // Handle recipe selection logic
+    }
+}

@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject KaffeApiClient KaffeApiClient
 @using KaffeMaskineProjekt.DTO
+@using KaffeMaskineProjekt.Web.Components.Common
 
 <h3>Ingredients</h3>
 
@@ -10,14 +11,10 @@
 <button type="button" @onclick="AddIngredient">Add</button>
 
 <p>All Ingredients:</p>
-<ul>
-    @foreach (var ingredient in ingredients)
-    {
-        <li>
-            <p>@ingredient.Name - <span onclick="@(async () => await DeleteIngredient(ingredient))" style="text-decoration:underline;text-decoration-color:red;">Delete</span></p> 
-        </li>
-    }
-</ul>
+<CardList Items="ingredients">
+    <IngredientCard Ingredient="@context">
+    </IngredientCard>
+</CardList>
 
 @code {
 
