@@ -1,16 +1,53 @@
 ﻿@page "/login"
+@rendermode InteractiveServer
+@inject KaffeApiClient KaffeApiClient
+@inject NavigationManager Navigation
+@using KaffeMaskineProjekt.DTO
+@using KaffeMaskineProjekt.DomainModels
 
-<PageTitle>Login</PageTitle>
 <h3>Login</h3>
 
 <div class="loginContainer">
-    <label>Username: </label>
-    <input type="text" id="username" name="username" />
+    <label for="username">Username:</label>
+    <input id="username" type="text" @bind="Username" />
     <br>
-    <label>Password: </label>
-    <input type="text" id="password" name="password" />
+    <label for="password">Password:</label>
+    <input id="password" type="password" @bind="Password" />
 </div>
+
 <div>
     <br>
-    <button type="submit">Submit</button>
+    <button type="button" @onclick="HandleLogin">Login</button>
 </div>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <p style="color: red;">@ErrorMessage</p>
+}
+
+@code {
+    private string Username { get; set; } = string.Empty;
+    private string Password { get; set; } = string.Empty;
+    private string? ErrorMessage { get; set; }
+
+    private async Task HandleLogin()
+    {
+        ErrorMessage = null;
+
+        var loginModel = new LoginModel
+            {
+                Name = Username,
+                Password = Password
+            };
+
+        var user = await KaffeApiClient.LoginAsync(loginModel);
+        if (user != null)
+        {
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            ErrorMessage = "Invalid username or password.";
+        }
+    }
+}

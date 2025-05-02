@@ -63,6 +63,26 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             return BadRequest(ModelState);
         }
 
+        //allows you to login
+        [HttpPost]
+        public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
+        {
+            if (string.IsNullOrWhiteSpace(loginModel.Name) || string.IsNullOrWhiteSpace(loginModel.Password))
+            {
+                return BadRequest("Username or password cannot be empty.");
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Name == loginModel.Name && u.Password == loginModel.Password);
+
+            if (user == null)
+            {
+                return Unauthorized("Invalid username or password.");
+            }
+
+            return Ok(user);
+        }
+
         //allows you to edit an user
         [HttpPut]
         public async Task<IActionResult> Edit(int id, [FromBody][Bind("id")] EditUserModel user)
@@ -125,5 +145,10 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             };
         }
 
+    }
+    public class LoginModel
+    {
+        public required string Name { get; set; }
+        public required string Password { get; set; }
     }
 }
