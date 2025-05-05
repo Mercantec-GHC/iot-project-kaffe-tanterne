@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KaffeMaskineProjekt.DomainModels\KaffeMaskineProjekt.DomainModels.csproj" />
+    <ProjectReference Include="..\KaffeMaskineProjekt.DTO\KaffeMaskineProjekt.DTO.csproj" />
     <ProjectReference Include="..\KaffeMaskineProjekt.Repository\KaffeMaskineProjekt.Repository.csproj" />
     <ProjectReference Include="..\KaffeMaskineProjekt.ServiceDefaults\KaffeMaskineProjekt.ServiceDefaults.csproj" />
   </ItemGroup>

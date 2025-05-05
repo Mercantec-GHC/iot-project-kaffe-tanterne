@@ -21,7 +21,12 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return Ok(await _context.Statistics.ToListAsync());
+            var statistics = await _context.Statistics
+                .Include(s => s.Recipe)
+                .Include(s => s.User)
+                .ToListAsync();
+
+            return Ok(statistics);
         }
 
         // GET details
@@ -39,7 +44,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         // POST: Measurements
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateStatisticsModel statistics)
+        public async Task<IActionResult> Create([FromBody] CreateStatisticsModel statistics)
         {
             _context.Statistics.Add(statistics.ToStatistics());
             _context.SaveChanges();
@@ -48,7 +53,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         // PUT: Measurements
         [HttpPut]
-        public IActionResult Update([FromBody] EditStatisticsModel statistics)
+        public IActionResult Edit([FromBody] EditStatisticsModel statistics)
         {
             _context.Statistics.Update(statistics.ToStatistics());
             _context.SaveChanges();
