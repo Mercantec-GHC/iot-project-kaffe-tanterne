@@ -1,0 +1,63 @@
+﻿h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+label {
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+input, select, button {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+    li p {
+        margin: 0;
+    }
+
+span {
+    color: red;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+    span:hover {
+        text-decoration: underline;
+    }
