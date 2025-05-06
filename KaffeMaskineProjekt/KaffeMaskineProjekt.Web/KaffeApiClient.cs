@@ -136,6 +136,73 @@ public class KaffeApiClient(HttpClient httpClient)
         return response.IsSuccessStatusCode;
     }
     #endregion
+
+    // Measurements
+    #region Measurements
+    public async Task<List<MeasurementsDTO>> GetMeasurementsAsync(CancellationToken cancellationToken = default)
+    {
+        return await httpClient.GetFromJsonAsync<List<MeasurementsDTO>>("api/Measurements/Index", cancellationToken)
+            ?? new List<MeasurementsDTO>();
+    }
+
+    public async Task<MeasurementsDTO> GetMeasurementAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await httpClient.GetFromJsonAsync<MeasurementsDTO>($"api/Measurements/Details/{id}", cancellationToken);
+    }
+
+    public async Task<MeasurementsDTO> CreateMeasurementsAsync(CreateMeasurementsModel model, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PostAsJsonAsync("api/Measurements/Create", model, cancellationToken);
+        if (!response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadFromJsonAsync<MeasurementsDTO>(cancellationToken: cancellationToken);
+    }
+
+    public async Task<bool> UpdateMeasurementsAsync(int id, EditMeasurementsModel model, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PutAsJsonAsync($"api/Measurements/Edit/{id}", model, cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> DeleteMeasurementsAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.DeleteAsync($"api/Measurements/Delete/{id}", cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+    #endregion
+
+    // Statistics
+    #region Statistics
+    public async Task<List<StatisticsDTO>> GetStatisticsAsync(CancellationToken cancellationToken = default)
+    {
+        return await httpClient.GetFromJsonAsync<List<StatisticsDTO>>("api/Statistics/Index", cancellationToken)
+            ?? new List<StatisticsDTO>();
+    }
+
+    public async Task<StatisticsDTO> GetStatisticAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await httpClient.GetFromJsonAsync<StatisticsDTO>($"api/Statistics/Details/{id}", cancellationToken);
+    }
+
+    public async Task<StatisticsDTO> CreateStatisticsAsync(CreateStatisticsModel model, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PostAsJsonAsync("api/Statistics/Create", model, cancellationToken);
+        if (!response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadFromJsonAsync<StatisticsDTO>(cancellationToken: cancellationToken);
+    }
+
+    public async Task<bool> UpdateStatisticsAsync(int id, EditStatisticsModel model, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.PutAsJsonAsync($"api/Statistics/Edit/{id}", model, cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> DeleteStatisticsAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var response = await httpClient.DeleteAsync($"api/Statistics/Delete/{id}", cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+  #endregion
+    
     // Login
     #region Login
     public async Task<User?> LoginAsync(LoginModel model, CancellationToken cancellationToken = default)
