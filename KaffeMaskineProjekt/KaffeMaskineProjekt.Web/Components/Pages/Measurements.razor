@@ -9,7 +9,7 @@
 <PageTitle>Measurements</PageTitle>
 <div class="uploadContainer">
     <label>Ingredient: </label>
-    <InputSelect id="ingridientSelect" @bind-Value="selectedIngredientId">
+    <InputSelect id="ingredientSelect" @bind-Value="selectedIngredientId">
         @foreach (var ingredient in ingredients)
         {
             <option value="@ingredient.Id">@ingredient.Name</option>
