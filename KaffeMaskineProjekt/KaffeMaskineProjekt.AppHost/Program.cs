@@ -17,7 +17,7 @@ var react = builder.AddNpmApp("KaffeMaskineProjekt-React", "../java-dashboard-de
     .WithReference(apiService)
     .WaitFor(apiService)
     .WithEnvironment("BROWSER", "none") // Disable opening browser on npm start
-    .WithHttpEndpoint(env: "PORT", targetPort: 8080, port: 8080, isProxied: false)
+    .WithHttpEndpoint(env: "PORT", isProxied: false, port: 8080, targetPort: 8080)
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
