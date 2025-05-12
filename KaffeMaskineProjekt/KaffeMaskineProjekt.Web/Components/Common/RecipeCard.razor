@@ -1,0 +1,22 @@
+@using KaffeMaskineProjekt.DTO
+
+@if (Recipe is null)
+{
+    <div class="recipe-card">
+        <h4>Not found</h4>
+        <button disabled>View Details</button>
+    </div>
+}
+else
+{
+    <div class="recipe-card">
+        <h4>@Recipe.Name</h4>
+        <p>Description</p>
+        <button @onclick="() => OnSelectRecipe.InvokeAsync(Recipe)">View Details</button>
+    </div>
+}
+
+@code {
+    [Parameter] public RecipeDTO? Recipe { get; set; }
+    [Parameter] public EventCallback<RecipeDTO> OnSelectRecipe { get; set; }
+}

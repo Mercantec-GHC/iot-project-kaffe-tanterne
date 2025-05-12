@@ -1,0 +1,3 @@
+[submodule "KaffeMaskineProjekt/java-dashboard-delight"]
+	path = KaffeMaskineProjekt/java-dashboard-delight
+	url = https://github.com/Ridderrasmus/java-dashboard-delight.git
