@@ -13,6 +13,15 @@ var apiService = builder.AddProject<Projects.KaffeMaskineProjekt_ApiService>("ap
     .WaitFor(db);
 
 
+var react = builder.AddNpmApp("KaffeMaskineProjekt-React", "../java-dashboard-delight", "dev")
+    .WithReference(apiService)
+    .WaitFor(apiService)
+    .WithEnvironment("BROWSER", "none") // Disable opening browser on npm start
+    .WithHttpEndpoint(env: "PORT", targetPort: 8080, port: 8080, isProxied: false)
+    .WithExternalHttpEndpoints()
+    .PublishAsDockerFile();
+
+
 
 builder.AddProject<Projects.KaffeMaskineProjekt_Web>("webfrontend")
     .WithExternalHttpEndpoints()
