@@ -1,18 +1,48 @@
 #include <Arduino.h>
+#include <BetterWiFiNINA.h>
+#include <Arduino_MKRIoTCarrier.h>
+#include <api.cpp>
 
-// put function declarations here:
-int myFunction(int, int);
+
+
+MKRIoTCarrier carrier;
+bool buttonPressed = false;
+
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(9600);
+  carrier.noCase();
+  carrier.begin();
+
+  
+  carrier.display.init(64, 64);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
+  // Check and reconnect to WiFi and API
+  // if (!checkAndReconnect()) {
+  //   Serial.println("Failed to reconnect to WiFi or API");
+  //   delay(10000); // Wait before retrying
+  //   return;
+  // }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  carrier.display.fillScreen(carrier.display.color565(0, 0, 0));
+  carrier.display.setCursor(16, 32);
+  
+  if (buttonPressed) {
+    carrier.display.print("Button pressed");
+  } else
+  {
+    carrier.display.print("None pressed");
+  }
+
+  carrier.Buttons.update();
+  if (carrier.Buttons.getTouch(TOUCH4) && !buttonPressed) {
+    buttonPressed = true;
+    Serial.println("Button 4 pressed");
+  } else if (!carrier.Buttons.getTouch(TOUCH4) && buttonPressed) {
+    buttonPressed = false;
+    Serial.println("Button released");
+  }
+  delay(10); // Wait before retrying
 }
