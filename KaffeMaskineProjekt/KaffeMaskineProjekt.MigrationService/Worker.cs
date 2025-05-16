@@ -59,10 +59,19 @@ public class Worker(
             Name = "Water"
         };
 
-        User defaultUser = new()
+        User basicUser = new()
+        {
+            Name = "user",
+            Password = "Password1234",
+            Email = "basic@basic.com",
+        };
+
+        User adminUser = new()
         {
             Name = "admin",
             Password = "Password1234",
+            Email = "admin@adminstuff.com",
+            Roles = new List<string> { "Admin" }
         };
 
         Recipe recipe = new()
@@ -91,7 +100,7 @@ public class Worker(
         Order order = new()
         {
             Recipe = recipe,
-            User = defaultUser,
+            User = adminUser,
             HasBeenServed = false,
         };
 
@@ -106,7 +115,7 @@ public class Worker(
         {
             NumberOfUses = 0,
             Recipe = recipe,
-            User = defaultUser
+            User = adminUser
         };
 
         var strategy = dbContext.Database.CreateExecutionStrategy();
@@ -115,7 +124,7 @@ public class Worker(
             // Seed the database
             await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
             await dbContext.Ingredients.AddRangeAsync([firstIngredient, secondIngredient, thirdIngredient], cancellationToken);
-            await dbContext.Users.AddAsync(defaultUser, cancellationToken);
+            await dbContext.Users.AddRangeAsync([basicUser ,adminUser], cancellationToken);
             await dbContext.Recipes.AddAsync(recipe, cancellationToken);
             await dbContext.Orders.AddAsync(order, cancellationToken);
             await dbContext.Measurements.AddAsync(measurements, cancellationToken);
