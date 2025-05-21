@@ -1,15 +1,20 @@
 #include <Arduino.h>
+#include "Scales.h"
+//#include "ScalesCalibration.h"
 
 // put function declarations here:
 int myFunction(int, int);
 
 void setup() {
-  // put your setup code here, to run once:
+  Serial.begin(9600);
   int result = myFunction(2, 3);
+  ScaleStart();
+  //ScaleCalibrationStart();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  ScaleLoop();
+  //ScaleCalibrationLoop();
 }
 
 // put function definitions here:
