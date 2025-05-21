@@ -12,11 +12,6 @@ void ScaleCalibrationStart()
   myScale.begin(dataPin, clockPin);
 }
 
-void ScaleCalibrationLoop()
-{
-  calibrate();
-}
-
 void calibrate()
 {
   Serial.println("\n\nCALIBRATION\n===========");
@@ -71,4 +66,9 @@ void calibrate()
   Serial.println("in the setup of your project");
 
   Serial.println("\n\n");
+}
+
+void ScaleCalibrationLoop()
+{
+  calibrate();
 }
