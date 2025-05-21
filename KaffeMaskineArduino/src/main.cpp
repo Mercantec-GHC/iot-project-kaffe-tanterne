@@ -1,11 +1,8 @@
-#include <Arduino.h>
-#include <BetterWiFiNINA.h>
 #include <Arduino_MKRIoTCarrier.h>
-#include <api.cpp>
-
-
+#include "api.h"
 
 MKRIoTCarrier carrier;
+
 bool buttonPressed = false;
 
 
@@ -20,11 +17,11 @@ void setup() {
 
 void loop() {
   // Check and reconnect to WiFi and API
-  // if (!checkAndReconnect()) {
-  //   Serial.println("Failed to reconnect to WiFi or API");
-  //   delay(10000); // Wait before retrying
-  //   return;
-  // }
+  if (!checkAndReconnect()) {
+    Serial.println("Failed to reconnect to WiFi or API");
+    delay(10000); // Wait before retrying
+    return;
+  }
 
   carrier.display.fillScreen(carrier.display.color565(0, 0, 0));
   carrier.display.setCursor(16, 32);
