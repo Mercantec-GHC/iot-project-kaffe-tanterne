@@ -1,10 +1,24 @@
 {
   "folders": [
 	{
+		"name": "KaffeMaskineProjekt",
 		"path": "KaffeMaskineProjekt"
 	},
 	{
+		"name": "KaffeMaskineArduino",
 		"path": "KaffeMaskineArduino"
+	},
+	{
+		"name": "A1",
+		"path": "A1"
+	},
+	{
+		"name": "A2",
+		"path": "A2"
+	},
+	{
+		"name": "A3",
+		"path": "A3"
 	}
 ]
 }
