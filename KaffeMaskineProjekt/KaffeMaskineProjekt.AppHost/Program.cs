@@ -23,6 +23,8 @@ var react = builder.AddNpmApp("KaffeMaskineProjekt-React", "../java-dashboard-de
 
 
 
+// Likely gonna remove this - We're uisng a react frontend instead
+// seeing as blazor is having trouble doing WASM with an aspire orchestration
 builder.AddProject<Projects.KaffeMaskineProjekt_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithReference(apiService)

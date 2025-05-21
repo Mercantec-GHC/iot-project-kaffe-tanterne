@@ -5,6 +5,7 @@ const char* ssid = "MAGS-OLC"; // Network SSID (name)
 const char* password = "Merc1234!"; // Network password
 const char* api = "your-API"; // Api key
 const char* host = "api.example.com"; // Api host
+const char* socketaddress = "192.168.1.151"; // Wifi power socket address
 
 WiFiClient client;
 
@@ -46,7 +47,7 @@ bool checkAndReconnect() {
   if (!checkWiFiConnection()) {
     connectToWiFi();
   }
-
+  return true;
   if (!checkApiConnection()) {
     Serial.println("Reconnecting to API...");
     if (client.connect(host, 80)) {
@@ -121,3 +122,4 @@ char* getOrderList() {
     
     return responseCharArray;
 }
+
