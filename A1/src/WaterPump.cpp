@@ -5,7 +5,6 @@ int motor1pin2 = 3;
 DS18B20 ds(A1);
 
 void setup() {
-  Serial.begin(9600);
   pinMode(motor1pin1, OUTPUT);
   pinMode(motor1pin2, OUTPUT);
 }
