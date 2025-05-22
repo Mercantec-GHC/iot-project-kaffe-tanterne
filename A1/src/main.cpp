@@ -28,7 +28,7 @@ void loop() {
 
   WaterPumpLoop();
 
-  if (temp > 90.0) {
+  if (temp > 50.0) {
     powerPlugApi.toggleOff();
   }
 }

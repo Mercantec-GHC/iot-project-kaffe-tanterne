@@ -3,10 +3,10 @@
 #ifndef WaterPump_h
 #define WaterPump_h
 
-DS18B20 ds(A1);
-float temp = ds.getTempC();
+extern DS18B20 ds;
+extern float temp;
 
 void WaterPumpSetup();
 void WaterPumpLoop();
 
-#endif // WaterPump.h
+#endif // WaterPump_h
