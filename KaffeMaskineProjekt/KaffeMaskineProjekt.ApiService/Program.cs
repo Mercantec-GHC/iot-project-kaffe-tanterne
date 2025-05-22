@@ -19,7 +19,7 @@ builder.AddNpgsqlDbContext<KaffeDBContext>("KaffeDB");
 builder.Services.AddSingleton<TokenService>();
 
 builder.Services.AddProblemDetails();
-builder.Services.AddCors(options =>
+builder.Services.AddCors(/*options =>
 {
     options.AddDefaultPolicy(policy =>
     {
@@ -28,7 +28,7 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowCredentials();
     });
-});
+}*/);
 
 // Configure Identity and JWT authentication
 builder.Services.AddAuthorization();
@@ -65,7 +65,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors();
+app.UseCors(builder =>
+{
+    builder.AllowAnyOrigin();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

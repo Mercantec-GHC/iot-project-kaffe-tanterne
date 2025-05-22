@@ -1,10 +1,14 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+
+builder.AddDockerComposeEnvironment("compose");
+
 var dbserver = builder.AddPostgres("KaffeDbServer");
+
 var db = dbserver.AddDatabase("KaffeDb");
 dbserver.WithPgAdmin();
 
-builder.AddProject<Projects.KaffeMaskineProjekt_MigrationService>("MigrationService")
+builder.AddProject<Projects.KaffeMaskineProjekt_MigrationService>("migrationservice")
     .WithReference(db)
     .WaitFor(dbserver);
 
@@ -13,21 +17,13 @@ var apiService = builder.AddProject<Projects.KaffeMaskineProjekt_ApiService>("ap
     .WaitFor(db);
 
 
-var react = builder.AddNpmApp("KaffeMaskineProjekt-React", "../java-dashboard-delight", "dev")
+var react = builder.AddNpmApp("kaffemaskineprojekt-react", "../java-dashboard-delight")
     .WithReference(apiService)
     .WaitFor(apiService)
     .WithEnvironment("BROWSER", "none") // Disable opening browser on npm start
-    .WithHttpEndpoint(env: "PORT", isProxied: false, port: 8080, targetPort: 8080)
+    .WithHttpEndpoint(env: "VITE_PORT")
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
-
-
-// Likely gonna remove this - We're uisng a react frontend instead
-// seeing as blazor is having trouble doing WASM with an aspire orchestration
-builder.AddProject<Projects.KaffeMaskineProjekt_Web>("webfrontend")
-    .WithExternalHttpEndpoints()
-    .WithReference(apiService)
-    .WaitFor(apiService);
 
 builder.Build().Run();
