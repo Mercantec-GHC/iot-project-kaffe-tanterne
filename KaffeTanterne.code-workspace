@@ -20,5 +20,11 @@
 		"name": "A3",
 		"path": "A3"
 	}
-]
+],
+"settings": {
+	"files.associations": {
+		"*.embeddedhtml": "html",
+		"algorithm": "cpp"
+	}
+}
 }

@@ -1,21 +1,34 @@
 #include <Arduino.h>
+#include "network.h"
+#include "powerplugapi.h"
+#include "orderapi.h"
 #include "WaterPump.h"
 
-// put function declarations here:
-int myFunction(int, int);
+const char* ssid = "MAGS-OLC";
+const char* password = "Merc1234!";
+const char* apiKey = "your-API";
+const char* host = "api.example.com";
+const char* socketaddress = "192.168.1.151";
+
+Network network(ssid, password);
+OrderApi orderApi(network, host, apiKey);
+PowerPlugApi powerPlugApi(network, socketaddress);
 
 void setup() {
-  // put your setup code here, to run once:
+  Serial.begin(9600);
   WaterPumpSetup();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  Serial.begin(9600);
-  WaterPumpLoop();
-}
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  if (!network.isConnected()) {
+    Serial.println("WiFi not connected, reconnecting...");
+    network.connect();
+  }
+
+  WaterPumpLoop();
+
+  if (temp > 90.0) {
+    powerPlugApi.toggleOff();
+  }
 }

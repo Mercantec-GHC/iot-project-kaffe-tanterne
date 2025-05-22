@@ -1,8 +1,7 @@
-#include <DS18B20.h>
+#include "WaterPump.h"
 
 int motor1pin1 = 2;
 int motor1pin2 = 3;
-DS18B20 ds(A1);
 
 void WaterPumpSetup() {
   pinMode(motor1pin1, OUTPUT);
@@ -17,7 +16,6 @@ void WaterPumpLoop() {
   if (temp > 30.0) {
     digitalWrite(motor1pin1,   HIGH);
   } else {
-
     digitalWrite(motor1pin1, LOW);
   }
 }
