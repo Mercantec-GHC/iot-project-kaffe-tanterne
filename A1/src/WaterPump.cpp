@@ -9,7 +9,7 @@ void WaterPumpSetup() {
 }
 
 void WaterPumpLoop() {
-  float temp = ds.getTempC();
+  temp = ds.getTempC();
   Serial.print("Temperature: ");
   Serial.println(temp);
 
