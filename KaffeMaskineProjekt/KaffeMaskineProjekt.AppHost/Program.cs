@@ -1,5 +1,6 @@
-var builder = DistributedApplication.CreateBuilder(args);
+using Aspire.Hosting;
 
+var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddDockerComposeEnvironment("compose");
 
@@ -16,10 +17,9 @@ var apiService = builder.AddProject<Projects.KaffeMaskineProjekt_ApiService>("ap
     .WithReference(db)
     .WaitFor(db);
 
-
 var react = builder.AddNpmApp("kaffemaskineprojekt-react", "../java-dashboard-delight")
-    .WithReference(apiService)
     .WaitFor(apiService)
+    .WithReference(apiService)
     .WithEnvironment("BROWSER", "none") // Disable opening browser on npm start
     .WithHttpEndpoint(env: "VITE_PORT")
     .WithExternalHttpEndpoints()

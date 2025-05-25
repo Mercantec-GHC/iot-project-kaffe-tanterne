@@ -19,16 +19,18 @@ builder.AddNpgsqlDbContext<KaffeDBContext>("KaffeDB");
 builder.Services.AddSingleton<TokenService>();
 
 builder.Services.AddProblemDetails();
-builder.Services.AddCors(/*options =>
+
+// Add CORS with allowed origins from configuration
+builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:8080") // Use your frontend URL
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod();
     });
-}*/);
+});
+
 
 // Configure Identity and JWT authentication
 builder.Services.AddAuthorization();
@@ -65,10 +67,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors(builder =>
-{
-    builder.AllowAnyOrigin();
-});
+
+app.UseCors(); // Use CORS before authentication
+
 
 app.UseAuthentication();
 app.UseAuthorization();
