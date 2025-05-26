@@ -1,33 +1,49 @@
+using Aspire.Hosting;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-var dbserver = builder.AddPostgres("KaffeDbServer");
-var db = dbserver.AddDatabase("KaffeDb");
-dbserver.WithPgAdmin();
+builder.AddDockerComposeEnvironment("compose");
 
-builder.AddProject<Projects.KaffeMaskineProjekt_MigrationService>("MigrationService")
+var dbserver = builder.AddPostgres("KaffeDbServer");
+
+var db = dbserver.AddDatabase("KaffeDb");
+
+dbserver.WithPgAdmin()
+    .WithUrlForEndpoint("http", url =>
+    {
+        url.DisplayText = "DB Panel";
+    });
+
+builder.AddProject<Projects.KaffeMaskineProjekt_MigrationService>("migrationservice")
     .WithReference(db)
     .WaitFor(dbserver);
 
 var apiService = builder.AddProject<Projects.KaffeMaskineProjekt_ApiService>("apiservice")
     .WithReference(db)
-    .WaitFor(db);
+    .WaitFor(db)
+    .WithUrlForEndpoint("http", url =>
+    {
+        url.DisplayText = "API Docs (HTTP)";
+        url.Url = "/scalar";
+    })
+    .WithUrlForEndpoint("https", url =>
+    {
+        url.DisplayText = "API Docs (HTTPS)";
+        url.Url = "/scalar";
+        url.DisplayLocation = UrlDisplayLocation.DetailsOnly;
+    });
 
-
-var react = builder.AddNpmApp("KaffeMaskineProjekt-React", "../java-dashboard-delight", "dev")
-    .WithReference(apiService)
+var react = builder.AddNpmApp("kaffemaskineprojekt-react", "../java-dashboard-delight")
     .WaitFor(apiService)
+    .WithReference(apiService)
     .WithEnvironment("BROWSER", "none") // Disable opening browser on npm start
-    .WithHttpEndpoint(env: "PORT", isProxied: false, port: 8080, targetPort: 8080)
+    .WithHttpEndpoint(env: "VITE_PORT")
     .WithExternalHttpEndpoints()
+    .WithUrlForEndpoint("http", url =>
+    {
+        url.DisplayText = "Frontend";
+    })
     .PublishAsDockerFile();
 
-
-
-// Likely gonna remove this - We're uisng a react frontend instead
-// seeing as blazor is having trouble doing WASM with an aspire orchestration
-builder.AddProject<Projects.KaffeMaskineProjekt_Web>("webfrontend")
-    .WithExternalHttpEndpoints()
-    .WithReference(apiService)
-    .WaitFor(apiService);
 
 builder.Build().Run();

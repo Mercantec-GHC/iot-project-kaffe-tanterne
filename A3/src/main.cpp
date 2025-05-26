@@ -5,16 +5,17 @@
 #include "menu.h"
 
 // WiFi credentials and API info
-const char* ssid = "MAGS-OLC";
-const char* password = "Merc1234!";
-const char* apiKey = "your-API";
-const char* host = "api.example.com";
+const char* ssid = "WiFimodem-C1F9";
+const char* password = "bonkbonkbonk";
+const char* apiKey = "";
+const char* apiHost = "192.168.0.205";
+const int apiPort = 8006;
 const char* socketaddress = "192.168.1.151";
 static unsigned long lastMenuOptionUpdate = 0;
 
 MKRIoTCarrier carrier;
 Network network(ssid, password);
-OrderApi orderApi(network, host, apiKey);
+OrderApi orderApi(network, apiHost, apiPort);
 PowerPlugApi powerPlugApi(network, socketaddress);
 
 // Use fixed-size arrays for orders and options
