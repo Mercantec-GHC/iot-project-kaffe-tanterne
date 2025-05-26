@@ -7,7 +7,12 @@ builder.AddDockerComposeEnvironment("compose");
 var dbserver = builder.AddPostgres("KaffeDbServer");
 
 var db = dbserver.AddDatabase("KaffeDb");
-dbserver.WithPgAdmin();
+
+dbserver.WithPgAdmin()
+    .WithUrlForEndpoint("http", url =>
+    {
+        url.DisplayText = "DB Panel";
+    });
 
 builder.AddProject<Projects.KaffeMaskineProjekt_MigrationService>("migrationservice")
     .WithReference(db)
@@ -15,7 +20,18 @@ builder.AddProject<Projects.KaffeMaskineProjekt_MigrationService>("migrationserv
 
 var apiService = builder.AddProject<Projects.KaffeMaskineProjekt_ApiService>("apiservice")
     .WithReference(db)
-    .WaitFor(db);
+    .WaitFor(db)
+    .WithUrlForEndpoint("http", url =>
+    {
+        url.DisplayText = "API Docs (HTTP)";
+        url.Url = "/scalar";
+    })
+    .WithUrlForEndpoint("https", url =>
+    {
+        url.DisplayText = "API Docs (HTTPS)";
+        url.Url = "/scalar";
+        url.DisplayLocation = UrlDisplayLocation.DetailsOnly;
+    });
 
 var react = builder.AddNpmApp("kaffemaskineprojekt-react", "../java-dashboard-delight")
     .WaitFor(apiService)
@@ -23,6 +39,10 @@ var react = builder.AddNpmApp("kaffemaskineprojekt-react", "../java-dashboard-de
     .WithEnvironment("BROWSER", "none") // Disable opening browser on npm start
     .WithHttpEndpoint(env: "VITE_PORT")
     .WithExternalHttpEndpoints()
+    .WithUrlForEndpoint("http", url =>
+    {
+        url.DisplayText = "Frontend";
+    })
     .PublishAsDockerFile();
 
 

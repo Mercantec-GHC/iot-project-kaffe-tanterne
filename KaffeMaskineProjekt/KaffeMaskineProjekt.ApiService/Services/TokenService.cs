@@ -20,11 +20,12 @@ namespace KaffeMaskineProjekt.ApiService.Services
             {
                 Subject = new ClaimsIdentity(new[] 
                 { 
-                    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()), 
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                     new Claim(JwtRegisteredClaimNames.Name, user.Name), 
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email)
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                    new Claim("userid", user.Id.ToString()),
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(config.GetValue<int>("JwT:ExpirationInMinutes")),
+                Expires = DateTime.UtcNow.AddMinutes(config.GetValue<int>("JwT:AccessTokenExpirationInMinutes")),
                 SigningCredentials = credentials,
                 Issuer = config["JwT:Issuer"],
                 Audience = config["JwT:Audience"]

@@ -46,89 +46,112 @@ public class Worker(
 
     private static async Task SeedDataAsync(KaffeDBContext dbContext, CancellationToken cancellationToken)
     {
-        Ingredient firstIngredient = new()
-        {
-            Name = "Instant Coffee"
-        };
-        Ingredient secondIngredient = new()
-        {
-            Name = "Sugar"
-        };
-        Ingredient thirdIngredient = new()
-        {
-            Name = "Water"
-        };
+        List<Ingredient> ingredients = [new Ingredient { Name = "Instant Coffee" },
+            new Ingredient { Name = "Sugar" },
+            new Ingredient { Name = "Water" }];
 
-        User basicUser = new()
-        {
-            Name = "user",
-            Password = "Password1234",
-            Email = "basic@basic.com",
-        };
+        List<User> users = [
+            new User { 
+                Name = "user", 
+                Password = "Password1234", 
+                Email = "basic@basic.com" },
+            new User {
+                Name = "admin", 
+                Password = "Password1234", 
+                Email = "admin@adminstuff.com",
+                Roles = new List<string> { "Admin" }
+            }
+        ];
 
-        User adminUser = new()
-        {
-            Name = "admin",
-            Password = "Password1234",
-            Email = "admin@adminstuff.com",
-            Roles = new List<string> { "Admin" }
-        };
-
-        Recipe recipe = new()
-        {
-            Name = "Frappe",
-            IngredientRecipes = new List<RecipeIngredient>()
+        List<Recipe> recipes = [
+            new()
             {
-                new RecipeIngredient()
+                Name = "Frappe",
+                IngredientRecipes = new List<RecipeIngredient>()
                 {
-                    Ingredient = firstIngredient,
-                    Amount = 25
-                },
-                new RecipeIngredient()
+                    new RecipeIngredient()
+                    {
+                        Ingredient = ingredients[0],
+                        Amount = 25
+                    },
+                    new RecipeIngredient()
+                    {
+                        Ingredient = ingredients[1],
+                        Amount = 10
+                    },
+                    new RecipeIngredient()
+                    {
+                        Ingredient = ingredients[2],
+                        Amount = 2000
+                    }
+                }
+            },
+            new()
+            {
+                Name = "Espresso",
+                IngredientRecipes = new List<RecipeIngredient>()
                 {
-                    Ingredient = secondIngredient,
-                    Amount = 10
-                },
-                new RecipeIngredient()
-                {
-                    Ingredient = thirdIngredient,
-                    Amount = 2000
+                    new RecipeIngredient()
+                    {
+                        Ingredient = ingredients[0],
+                        Amount = 10
+                    },
+                    new RecipeIngredient()
+                    {
+                        Ingredient = ingredients[1],
+                        Amount = 5
+                    },
+                    new RecipeIngredient()
+                    {
+                        Ingredient = ingredients[2],
+                        Amount = 1000
+                    }
                 }
             }
-        };
+        ];
+
+
 
         Order order = new()
         {
-            Recipe = recipe,
-            User = adminUser,
+            Recipe = recipes[0],
+            User = users[1],
             HasBeenServed = false,
         };
 
         Measurements measurements = new()
         {
-            Ingredient = firstIngredient,
+            Ingredient = ingredients[0],
             Time = DateTime.Now.ToUniversalTime(),
             Value = 5
         };
 
-        Statistics statistics = new()
-        {
-            NumberOfUses = 0,
-            Recipe = recipe,
-            User = adminUser
-        };
+        List<Statistics> statistics = [
+            new()
+            {
+                NumberOfUses = 6,
+                Recipe = recipes[0],
+                User = users[1]
+            },
+            new()
+            {
+                NumberOfUses = 3,
+                Recipe = recipes[1],
+                User = users[0]
+            }
+        ];
 
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
             // Seed the database
             await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-            await dbContext.Ingredients.AddRangeAsync([firstIngredient, secondIngredient, thirdIngredient], cancellationToken);
-            await dbContext.Users.AddRangeAsync([basicUser ,adminUser], cancellationToken);
-            await dbContext.Recipes.AddAsync(recipe, cancellationToken);
+            await dbContext.Ingredients.AddRangeAsync(ingredients, cancellationToken);
+            await dbContext.Users.AddRangeAsync(users, cancellationToken);
+            await dbContext.Recipes.AddRangeAsync(recipes, cancellationToken);
             await dbContext.Orders.AddAsync(order, cancellationToken);
             await dbContext.Measurements.AddAsync(measurements, cancellationToken);
-            await dbContext.Statistics.AddAsync(statistics, cancellationToken);
+            await dbContext.Statistics.AddRangeAsync(statistics, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         });
