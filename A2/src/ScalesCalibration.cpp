@@ -3,8 +3,8 @@
 HX711 myScale;
 
 //  adjust pins if needed.
-uint8_t dataPin = 4;
-uint8_t clockPin = 5;
+uint8_t dataPin = 2;
+uint8_t clockPin = 3;
 
 
 void ScaleCalibrationStart()

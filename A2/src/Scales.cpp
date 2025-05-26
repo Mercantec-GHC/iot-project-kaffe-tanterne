@@ -22,11 +22,11 @@ void ScaleStart()
   Serial.println(scale2.get_units(10));
 
   //use calibration file for reference
-  scale1.set_scale(202.247451); 
-  scale1.set_offset(352258);
+  scale1.set_scale(200.300262); 
+  scale1.set_offset(352716);
   scale1.tare();
-  scale2.set_scale(202.865127);
-  scale2.set_offset(354034);
+  scale2.set_scale(207.454300);
+  scale2.set_offset(512567);
   scale2.tare();
   
   //print first measurement, to prove connection
@@ -66,4 +66,12 @@ void ScaleLoop()
   Serial.print(" || ");
   Serial.println(x1);
   delay(100);
+}
+
+float GetScale1Weight() {
+    return w1;
+}
+
+float GetScale2Weight() {
+    return x1;
 }
