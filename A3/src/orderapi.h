@@ -13,7 +13,7 @@ public:
 
 class OrderApi {
 public:
-    OrderApi(Network& network, const char* host, const char* apiKey);
+    OrderApi(Network& network, const char* host, const int apiPort);
     bool checkApiConnection();
     int sendDataToApi(const char* endpoint, const char* data);
     int getOrderList(Order* orders, int maxOrders);
@@ -21,7 +21,7 @@ public:
 private:
     Network& _network;
     const char* _host;
-    const char* _apiKey;
+    const int _apiPort;
 };
 
 #endif // ORDERAPI_H
