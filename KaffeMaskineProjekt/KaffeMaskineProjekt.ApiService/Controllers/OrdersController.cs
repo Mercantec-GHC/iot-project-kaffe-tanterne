@@ -178,7 +178,48 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         {
             return Ok(new { IsBusy = IsCurrentlyHandlingOrder });
         }
+
+        [HttpGet]
+        public async Task<IActionResult> FirstOrderIfBusy()
+        {
+            if (!IsCurrentlyHandlingOrder)
+            {
+                return NotFound(new { Message = "No orders being handled." });
+            }
+
+            var firstOrder = await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.Recipe)
+                .OrderBy(o => o.Id)
+                .FirstOrDefaultAsync();
+
+            if (firstOrder == null)
+            {
+                return NotFound(new { Message = "No orders found." });
+            }
+
+            return Ok(firstOrder);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> MarkAsServed()
+        {
+            if (!IsCurrentlyHandlingOrder)
+            {
+                return NotFound(new { Message = "No orders being handled." });
+            }
+
+            var firstOrder = await _context.Orders
+                .OrderBy(o => o.Id)
+                .FirstOrDefaultAsync();
+
+            firstOrder.HasBeenServed = true;
+            _context.Orders.Update(firstOrder);
+            await _context.SaveChangesAsync();
+            return Ok(firstOrder);
+        }
     }
+
     public class CreateOrderModel
     {
         public int RecipeId { get; set; }

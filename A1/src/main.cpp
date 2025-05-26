@@ -6,9 +6,11 @@
 
 const char* ssid = "MAGS-OLC";
 const char* password = "Merc1234!";
-const char* apiKey = "your-API";
-const char* host = "api.example.com";
+const char* apiKey = "";
+const char* apiHost = "192.168.0.205";
+const int apiPort = 8006;
 const char* socketaddress = "192.168.1.151";
+static unsigned long lastMenuOptionUpdate = 0;
 
 Network network(ssid, password);
 OrderApi orderApi(network, host, apiKey);
