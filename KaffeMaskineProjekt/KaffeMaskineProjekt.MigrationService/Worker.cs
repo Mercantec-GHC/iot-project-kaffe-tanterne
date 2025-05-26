@@ -116,7 +116,7 @@ public class Worker(
         {
             Recipe = recipes[0],
             User = users[1],
-            HasBeenServed = false,
+            HasBeenServed = true,
         };
 
         Measurements measurements = new()

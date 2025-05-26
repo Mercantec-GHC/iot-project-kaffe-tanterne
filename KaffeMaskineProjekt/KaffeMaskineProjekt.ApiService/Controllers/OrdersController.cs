@@ -32,6 +32,19 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             return Ok(orders);
         }
 
+        //Gets all orders that have not been served
+        [HttpGet]
+        public async Task<IActionResult> Unserved()
+        {
+            var unservedOrders = await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.Recipe)
+                .Where(o => !o.HasBeenServed)
+                .AsNoTracking()
+                .ToListAsync();
+            return Ok(unservedOrders);
+        }
+
         //gets a specific order
         [HttpGet("{id}")]
         public async Task<IActionResult> Details(int? id)
