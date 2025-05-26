@@ -38,6 +38,10 @@ void menuInit(MKRIoTCarrier& carrier) {
 void menuUpdate(MKRIoTCarrier& carrier) {
     carrier.display.fillScreen(carrier.display.color565(0, 0, 0));
     carrier.display.setCursor(0, 0);
+    if (menuOptionCount == 0) {
+        carrier.display.println("No orders found");
+        return;
+    }
     if (!confirmScreen) {
         for (int i = 0; i < menuOptionCount; ++i) {
             if (i == selectedIndex) {
