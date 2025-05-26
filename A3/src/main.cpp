@@ -6,7 +6,7 @@
 
 // WiFi credentials and API info
 const char* ssid = "WiFimodem-C1F9";
-const char* password = "v2mmdn4qgn";
+const char* password = "bonkbonkbonk";
 const char* apiKey = "";
 const char* apiHost = "192.168.0.205";
 const int apiPort = 8006;
