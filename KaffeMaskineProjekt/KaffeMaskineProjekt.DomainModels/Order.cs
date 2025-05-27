@@ -6,7 +6,8 @@
 		public bool HasBeenServed { get; set; }
 		public int UserId { get; set; }
 		public int RecipeId { get; set; }
-		public User User { get; set; } 
+		public DateTime OrderDate { get; set; } = DateTime.UtcNow;
+        public User User { get; set; } 
 		public Recipe Recipe { get; set; }
 	}
 }
