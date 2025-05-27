@@ -3,6 +3,7 @@
 #include "powerplugapi.h"
 #include "testapi.h"
 #include "WaterPump.h"
+#include "CoffeeDispenser.h"
 
 const char* ssid = "MAGS-OLC";
 const char* password = "Merc1234!";
@@ -23,16 +24,21 @@ void setup() {
         Serial.print(".");
         network.connect();
     }
-    Serial.println("WiFi connected");
+  Serial.println("WiFi connected");
+  
+  CoffeeDispenserSetup();
 
   WaterPumpSetup();
 }
 
 void loop() {
 
+
   if (temp > 50.0) {
     powerPlugApi.toggleOff();
   }
+
+  CoffeeDispenserLoop();
 
   Order order;
   if (testApi.getBusyOrder(&order) == 1) {
