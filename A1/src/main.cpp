@@ -10,7 +10,6 @@ const char* apiKey = "";
 const char* apiHost = "10.133.51.125";
 const int apiPort = 8006;
 const char* socketaddress = "192.168.1.151";
-static unsigned long lastMenuOptionUpdate = 0;
 
 Network network(ssid, password);
 TestApi testApi(network, apiHost, apiPort, apiKey);
@@ -18,21 +17,31 @@ PowerPlugApi powerPlugApi(network, socketaddress);
 
 void setup() {
   Serial.begin(9600);
+  if (!network.isConnected() == false) {
+      Serial.println("WiFi not connected, reconnecting...");
+      network.connect();
+  }
+
   WaterPumpSetup();
 }
 
 void loop() {
-  if (!network.isConnected() == false) {
-    Serial.println("WiFi not connected, reconnecting...");
-    network.connect();
-  }
 
   if (temp > 50.0) {
     powerPlugApi.toggleOff();
   }
 
-  testApi.getBusyOrder(nullptr);
+  Order order;
+  if (testApi.getBusyOrder(&order) == 1) {
+    Serial.print("Got busy order: ");
+    Serial.print(order.id);
+    Serial.print(" - ");
+    Serial.println(order.name);
+  } else {
+    Serial.println("No busy order found.");
+  }
 
   WaterPumpLoop();
 
+  testApi.markAsServed(&order);
 }
