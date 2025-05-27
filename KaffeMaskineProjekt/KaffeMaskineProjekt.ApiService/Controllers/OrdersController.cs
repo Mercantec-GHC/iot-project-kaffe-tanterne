@@ -188,8 +188,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             }
 
             var firstOrder = await _context.Orders
-                .Include(o => o.User)
-                .Include(o => o.Recipe)
+                .Where(o => !o.HasBeenServed)
                 .OrderBy(o => o.Id)
                 .FirstOrDefaultAsync();
 
@@ -198,24 +197,39 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
                 return NotFound(new { Message = "No orders found." });
             }
 
-            return Ok(firstOrder);
+            // Return only the Id (and optionally other fields)
+            return Ok(new { Id = firstOrder.Id, Name = firstOrder.Recipe?.Name });
         }
 
-        [HttpPut]
-        public async Task<IActionResult> MarkAsServed()
+        [HttpPut("{id}")]
+        public async Task<IActionResult> MarkAsServed(int id)
         {
             if (!IsCurrentlyHandlingOrder)
             {
                 return NotFound(new { Message = "No orders being handled." });
             }
 
+            // Find the first unserved order
             var firstOrder = await _context.Orders
+                .Where(o => !o.HasBeenServed)
                 .OrderBy(o => o.Id)
                 .FirstOrDefaultAsync();
+
+            if (firstOrder == null)
+            {
+                return NotFound(new { Message = "No unserved orders found." });
+            }
+
+            // Only allow marking as served if the id matches the first unserved order
+            if (firstOrder.Id != id)
+            {
+                return BadRequest(new { Message = "You can only mark the first unserved order as served." });
+            }
 
             firstOrder.HasBeenServed = true;
             _context.Orders.Update(firstOrder);
             await _context.SaveChangesAsync();
+            IsCurrentlyHandlingOrder = false;
             return Ok(firstOrder);
         }
     }
