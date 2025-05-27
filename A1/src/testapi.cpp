@@ -2,8 +2,8 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-TestApi::TestApi(Network &network, const char *host, const int apiPort, const char *apiKey)
-    : _network(network), _host(host), _apiPort(apiPort) {}
+TestApi::TestApi(Network &network, const char *host, const char *apiKey, const int apiPort)
+    : _network(network), _host(host), _apiKey(apiKey), _apiPort(apiPort) {}
 
 bool TestApi::checkApiConnection()
 {

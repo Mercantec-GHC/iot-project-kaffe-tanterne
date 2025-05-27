@@ -13,7 +13,7 @@ public:
 
 class TestApi {
 public:
-    TestApi(Network &network, const char *host, const int apiPort, const char *apiKey);
+    TestApi(Network &network, const char *host, const char *apiKey, const int apiPort);
     bool checkApiConnection();
     int sendDataToApi(const char* endpoint, const char* data);
     int getOrderList(Order* orders, int maxOrders);
@@ -23,8 +23,8 @@ public:
 private:
     Network& _network;
     const char* _host;
-    const int _apiPort;
     const char* _apiKey;
+    const int _apiPort;
 };
 
 #endif // TESTAPI_H

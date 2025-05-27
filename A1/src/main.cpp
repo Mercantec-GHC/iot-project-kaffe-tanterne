@@ -12,15 +12,18 @@ const int apiPort = 8006;
 const char* socketaddress = "192.168.1.151";
 
 Network network(ssid, password);
-TestApi testApi(network, apiHost, apiPort, apiKey);
+TestApi testApi(network, apiHost, apiKey, apiPort);
 PowerPlugApi powerPlugApi(network, socketaddress);
 
 void setup() {
   Serial.begin(9600);
-  if (!network.isConnected() == false) {
-      Serial.println("WiFi not connected, reconnecting...");
-      network.connect();
-  }
+
+  while (network.isConnected() == false) {
+        delay(500);
+        Serial.print(".");
+        network.connect();
+    }
+    Serial.println("WiFi connected");
 
   WaterPumpSetup();
 }

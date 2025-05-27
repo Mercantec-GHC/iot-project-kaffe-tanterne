@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KaffeMaskineProjekt.Repository.Migrations
 {
     [DbContext(typeof(KaffeDBContext))]
-    [Migration("20250516092339_AccessTokenStuff")]
-    partial class AccessTokenStuff
+    [Migration("20250527113053_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,8 +75,11 @@ namespace KaffeMaskineProjekt.Repository.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("HasBeenServed")
-                        .HasColumnType("boolean");
+                    b.Property<int>("HasBeenServed")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("RecipeId")
                         .HasColumnType("integer");
