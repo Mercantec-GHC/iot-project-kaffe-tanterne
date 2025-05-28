@@ -193,12 +193,6 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> MarkAsServed(int id)
         {
-            
-            if (await _context.Orders.AnyAsync(o => o.HasBeenServed == OrderStatus.Handling) == false)
-            {
-                return NotFound(new { Message = "No orders being handled." });
-            }
-
             // Find the first unserved order
             var firstOrder = await _context.Orders
                 .Where(o => o.HasBeenServed == OrderStatus.Handling)

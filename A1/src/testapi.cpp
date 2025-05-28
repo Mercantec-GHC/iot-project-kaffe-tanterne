@@ -198,14 +198,18 @@ int TestApi::getBusyOrder(Order* order) {
 }
 
 int TestApi::markAsServed(Order* order) {
+    if (!order || order->id == 0) {
+        Serial.println("markAsServed: Invalid order");
+        return 0;
+    }
     WiFiClient& client = _network.getClient();
+    String endpoint = String("/api/Orders/MarkAsServed/") + String(order->id);
     if (!client.connect(_host, _apiPort)) {
         Serial.println("Connection to API failed");
         return 0;
     }
-
     // Send PUT request with no body
-    client.println("PUT /api/Orders/MarkAsServed HTTP/1.1");
+    client.println(String("PUT ") + endpoint + " HTTP/1.1");
     client.println(String("Host: ") + _host);
     client.println("Connection: close");
     client.println();
@@ -219,7 +223,6 @@ int TestApi::markAsServed(Order* order) {
             return 0;
         }
     }
-
     // Read response code
     int responseCode = 0;
     while (client.available()) {

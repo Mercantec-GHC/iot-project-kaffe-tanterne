@@ -34,23 +34,29 @@ void setup() {
 void loop() {
 
 
-  if (temp > 50.0) {
+  if (temp > 30.0) {
     powerPlugApi.toggleOff();
   }
 
   CoffeeDispenserLoop();
 
   Order order;
+  // Find the first order that is Handling (not Served yet)
   if (testApi.getBusyOrder(&order) == 1) {
-    Serial.print("Got served order: ");
+    Serial.print("Got handling order: ");
     Serial.print(order.id);
     Serial.print(" - ");
     Serial.println(order.name);
   } else {
-    Serial.println("No served order found.");
+    Serial.println("No handling order found.");
   }
 
   WaterPumpLoop();
 
-  testApi.markAsServed(&order);
+  // Mark this order as served (if found)
+  if (order.id != 0) {
+    int resp = testApi.markAsServed(&order);
+    Serial.print("Mark as served response: ");
+    Serial.println(resp);
+  }
 }
