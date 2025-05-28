@@ -42,12 +42,12 @@ void loop() {
 
   Order order;
   if (testApi.getBusyOrder(&order) == 1) {
-    Serial.print("Got busy order: ");
+    Serial.print("Got served order: ");
     Serial.print(order.id);
     Serial.print(" - ");
     Serial.println(order.name);
   } else {
-    Serial.println("No busy order found.");
+    Serial.println("No served order found.");
   }
 
   WaterPumpLoop();

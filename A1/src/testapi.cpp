@@ -162,6 +162,13 @@ int TestApi::getBusyOrder(Order* order) {
     }
     client.stop();
 
+    // Remove any whitespace before JSON
+    body.trim();
+    int jsonStart = body.indexOf('{');
+    if (jsonStart > 0) {
+        body = body.substring(jsonStart);
+    }
+
     // Parse JSON
     const size_t capacity = 512;
     DynamicJsonDocument doc(capacity);
@@ -169,6 +176,7 @@ int TestApi::getBusyOrder(Order* order) {
     if (error) {
         Serial.print("deserializeJson() failed: ");
         Serial.println(error.c_str());
+        Serial.println("Body: " + body); // Print body for debug
         return 0;
     }
     if (!doc.is<JsonObject>()) {
@@ -177,6 +185,10 @@ int TestApi::getBusyOrder(Order* order) {
         return 0;
     }
     int id = doc["id"] | 0;
+    if (id == 0) {
+        Serial.println("No served order found (id == 0).");
+        return 0;
+    }
     String name = "Order";
     if (doc.containsKey("recipe") && doc["recipe"].containsKey("name")) {
         name = doc["recipe"]["name"].as<String>();

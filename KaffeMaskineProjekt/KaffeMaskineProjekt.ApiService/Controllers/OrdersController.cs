@@ -167,37 +167,20 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         [HttpGet]
         public async Task<IActionResult> FirstOrderIfBusy()
         {
-            if (await _context.Orders.AnyAsync(o => o.HasBeenServed == OrderStatus.Handling) == false)
-            {
-                return NotFound(new { Message = "No orders being handled." });
-            }
-
-            // TEST: Insert a test order if none exist
-            if (!await _context.Orders.AnyAsync())
-            {
-                var testOrder = new Order
-                {
-                    // Set required properties for your Order entity
-                    RecipeId = 1, // Use a valid RecipeId from your DB
-                    HasBeenServed = OrderStatus.Handling
-                };
-                _context.Orders.Add(testOrder);
-                await _context.SaveChangesAsync();
-            }
-
+            // Only return the first order with HasBeenServed == Served, or 404 if none
             var firstOrder = await _context.Orders
-                .Where(o => o.HasBeenServed == OrderStatus.Handling)
+                .Where(o => o.HasBeenServed == OrderStatus.Served)
                 .OrderBy(o => o.Id)
                 .Include(o => o.Recipe)
                 .FirstOrDefaultAsync();
 
             if (firstOrder == null)
             {
-                return NotFound(new { Message = "No orders found." });
+                return NotFound(new { Message = "No served orders found." });
             }
 
-            // Return only the Id (and optionally other fields)
-            return Ok(new { Id = firstOrder.Id });
+            // Return the Id and recipe name if available
+            return Ok(new { id = firstOrder.Id, recipe = new { name = firstOrder.Recipe?.Name ?? "" } });
         }
 
         [HttpPut("{id}")]
