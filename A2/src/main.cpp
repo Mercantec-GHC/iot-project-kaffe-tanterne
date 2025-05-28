@@ -20,7 +20,7 @@ int waterIngredientId = -1;
 int coffeeIngredientId = -1;
 
 unsigned long lastApiCall = 0;
-const unsigned long apiInterval = 10000; // 10 seconds;
+const unsigned long apiInterval = 10000;
 
 int getWaterWeight();
 int getCoffeeWeight();
@@ -40,6 +40,7 @@ void setup() {
 
 void loop() {
     ScaleLoop();
+    // ScaleCalibrationLoop();
 
     unsigned long now = millis();
     if (now - lastApiCall >= apiInterval) {
