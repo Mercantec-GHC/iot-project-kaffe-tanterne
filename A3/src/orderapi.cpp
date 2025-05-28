@@ -54,7 +54,7 @@ int OrderApi::getOrderList(Order* orders, int maxOrders) {
     }
 
     // Send GET request
-    client.println("GET /api/Orders/Index HTTP/1.1");
+    client.println("GET /api/Orders/Unserved HTTP/1.1");
     client.println(String("Host: ") + _host);
     client.println("Connection: close");
     client.println();
