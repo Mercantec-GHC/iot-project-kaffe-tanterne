@@ -7,8 +7,10 @@ class Order {
 public:
     int id;
     String name;
-    Order() : id(0), name("") {}
-    Order(int id, const String& name) : id(id), name(name) {}
+    int userId;
+    int recipeId;
+    Order() : id(0), name(""), userId(0), recipeId(0) {}
+    Order(int id, const String& name, int userId = 0, int recipeId = 0) : id(id), name(name), userId(userId), recipeId(recipeId) {}
 };
 
 class OrderApi {
@@ -17,6 +19,8 @@ public:
     bool checkApiConnection();
     int sendDataToApi(const char* endpoint, const char* data);
     int getOrderList(Order* orders, int maxOrders);
+    int markOrderAsServed(int orderId);
+    int editOrderSetServed(const Order& order);
     // Future: parseOrderList, getOrderById, etc.
 private:
     Network& _network;

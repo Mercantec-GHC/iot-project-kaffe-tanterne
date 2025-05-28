@@ -29,6 +29,44 @@ void handleMenuSelection(int index);
 // Function to update the menu options
 void updateMenuOptions();
 
+bool isMachineBusy(Network& network, const char* host, int port) {
+    WiFiClient& client = network.getClient();
+    if (!client.connect(host, port)) {
+        Serial.println("Connection to API failed (MachineBusy)");
+        return false;
+    }
+    client.println("GET /api/Orders/MachineBusy HTTP/1.1");
+    client.println(String("Host: ") + host);
+    client.println("Connection: close");
+    client.println();
+
+    unsigned long timeout = millis();
+    while (!client.available()) {
+        if (millis() - timeout > 5000) {
+            Serial.println(">>> Client Timeout ! (MachineBusy)");
+            client.stop();
+            return false;
+        }
+    }
+    // Skip HTTP headers
+    String line;
+    while (client.available()) {
+        line = client.readStringUntil('\n');
+        if (line == "\r" || line.length() == 1) {
+            break;
+        }
+    }
+    // Read the body
+    String body = "";
+    while (client.available()) {
+        char c = client.read();
+        body += c;
+    }
+    client.stop();
+    // Parse for "IsBusy": true
+    return body.indexOf("IsBusy\":true") != -1;
+}
+
 void setup() {
   Serial.begin(9600);
   carrier.noCase();
@@ -52,6 +90,24 @@ void loop() {
     orderApi.checkApiConnection();
   }
 
+  // Check if the machine is busy
+  if (isMachineBusy(network, apiHost, apiPort)) {
+    // Show busy screen
+    carrier.display.fillScreen(carrier.display.color565(0, 0, 0));
+    carrier.display.setCursor(0, 0);
+    carrier.display.setTextColor(carrier.display.color565(255, 0, 0));
+    carrier.display.setTextSize(2);
+    carrier.display.println("Machine is busy!");
+    carrier.display.setTextSize(1);
+    carrier.display.setTextColor(carrier.display.color565(255, 255, 255));
+    carrier.display.println("");
+    carrier.display.println("Please wait for");
+    carrier.display.println("the current order");
+    carrier.display.println("to finish.");
+    delay(1000);
+    return;
+  }
+
   // Every 10 seconds, update the order list
   if (millis() - lastMenuOptionUpdate > 10000) {
     lastMenuOptionUpdate = millis();
@@ -71,6 +127,11 @@ void handleMenuSelection(int index) {
         Serial.print(orders[orderIdx].id);
         Serial.print(" - ");
         Serial.println(orders[orderIdx].name);
+
+        // Mark the order as served via the edit endpoint
+        int response = orderApi.editOrderSetServed(orders[orderIdx]);
+        Serial.print("EditOrderSetServed response code: ");
+        Serial.println(response);
 
         // Add your logic here to use the selected order
         powerPlugApi.toggleOn();
