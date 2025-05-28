@@ -188,6 +188,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             var firstOrder = await _context.Orders
                 .Where(o => o.HasBeenServed == OrderStatus.Handling)
                 .OrderBy(o => o.Id)
+                .Include(o => o.Recipe)
                 .FirstOrDefaultAsync();
 
             if (firstOrder == null)
