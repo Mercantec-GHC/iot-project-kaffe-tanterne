@@ -19,6 +19,9 @@
 	{
 		"name": "A3",
 		"path": "A3"
+	},
+	{
+		"path": "Scripts"
 	}
 ],
 "settings": {
