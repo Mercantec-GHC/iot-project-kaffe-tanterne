@@ -129,7 +129,6 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         //allows you to edit an order
         [HttpPut]
-        [Authorize]
         public async Task<IActionResult> Update([FromBody] EditOrderModel model)
         {
             if (!ModelState.IsValid)
@@ -198,6 +197,14 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
             // Return only the Id (and optionally other fields)
             return Ok(new { Id = firstOrder.Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MachineBusy()
+        {
+            // Check if there are any orders being handled
+            var isBusy = await _context.Orders.AnyAsync(o => o.HasBeenServed == OrderStatus.Handling);
+            return Ok(new { IsBusy = isBusy });
         }
 
         [HttpPut("{id}")]
