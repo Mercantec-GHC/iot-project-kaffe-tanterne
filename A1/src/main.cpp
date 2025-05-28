@@ -26,7 +26,7 @@ void setup() {
     }
   Serial.println("WiFi connected");
   
-  CoffeeDispenserSetup();
+  //CoffeeDispenserSetup();
 
   WaterPumpSetup();
 }
@@ -34,11 +34,11 @@ void setup() {
 void loop() {
 
 
-  if (temp > 30.0) {
+  if (temp > 70.0) {
     powerPlugApi.toggleOff();
   }
 
-  CoffeeDispenserLoop();
+  //CoffeeDispenserLoop();
 
   Order order;
   // Find the first order that is Handling (not Served yet)

@@ -24,7 +24,7 @@ void WaterPumpLoop() {
   Serial.print("Temperature: ");
   Serial.println(temp);
 
-  if (temp > 30.0) {
+  if (temp > 50.0) {
     if (!waterPumpRunning) {
       digitalWrite(motor1pin1, HIGH);
       waterPumpStartTime = currentMillis;
