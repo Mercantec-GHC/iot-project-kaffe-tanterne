@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\KaffeMaskineProjekt.DomainModels\KaffeMaskineProjekt.DomainModels.csproj" />
+  </ItemGroup>
+
 </Project>

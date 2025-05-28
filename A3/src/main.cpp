@@ -5,10 +5,10 @@
 #include "menu.h"
 
 // WiFi credentials and API info
-const char* ssid = "WiFimodem-C1F9";
-const char* password = "bonkbonkbonk";
+const char* ssid = "MAGS-OLC";
+const char* password = "Merc1234!";
 const char* apiKey = "";
-const char* apiHost = "192.168.0.205";
+const char* apiHost = "10.133.51.125";
 const int apiPort = 8006;
 const char* socketaddress = "192.168.1.151";
 static unsigned long lastMenuOptionUpdate = 0;
@@ -71,8 +71,10 @@ void handleMenuSelection(int index) {
         Serial.print(orders[orderIdx].id);
         Serial.print(" - ");
         Serial.println(orders[orderIdx].name);
+
         // Add your logic here to use the selected order
         powerPlugApi.toggleOn();
+
     }
 }
 
@@ -90,6 +92,11 @@ void updateMenuOptions() {
         orderMenuMap[i] = i; // Map menu index to order index
         Serial.print("Order: ");
         Serial.println(orders[i].name);
+    }
+    // Clear out any remaining menu options if the new order count is less than before
+    for (int i = orderCount; i < 5; ++i) {
+        options[i] = MenuOption("", nullptr);
+        orderMenuMap[i] = -1;
     }
     setMenuOptions(options, orderCount);
     Serial.println("Menu options updated.");

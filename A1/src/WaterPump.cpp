@@ -1,8 +1,17 @@
-#include <DS18B20.h>
+#include "WaterPump.h"
+
+DS18B20 ds(A1);
+float temp;
 
 int motor1pin1 = 2;
 int motor1pin2 = 3;
-DS18B20 ds(A1);
+
+unsigned long waterPumpStartTime = 0;
+unsigned long waterPumpStopTime = 0;
+
+bool waterPumpRunning = false;
+
+const unsigned long waterPumpRunDuration = 20000;
 
 void WaterPumpSetup() {
   pinMode(motor1pin1, OUTPUT);
@@ -10,14 +19,24 @@ void WaterPumpSetup() {
 }
 
 void WaterPumpLoop() {
-  float temp = ds.getTempC();
+  unsigned long currentMillis = millis();
+  temp = ds.getTempC();
   Serial.print("Temperature: ");
   Serial.println(temp);
 
   if (temp > 30.0) {
-    digitalWrite(motor1pin1,   HIGH);
+    if (!waterPumpRunning) {
+      digitalWrite(motor1pin1, HIGH);
+      waterPumpStartTime = currentMillis;
+      waterPumpRunning = true;
+    } else {
+      if (currentMillis - waterPumpStartTime >= waterPumpRunDuration) {
+        digitalWrite(motor1pin1, LOW);
+        waterPumpRunning = false;
+      }
+    }
   } else {
-
     digitalWrite(motor1pin1, LOW);
+    waterPumpRunning = false;
   }
 }

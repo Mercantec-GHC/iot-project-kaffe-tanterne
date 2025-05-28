@@ -19,4 +19,8 @@
     <ProjectReference Include="..\KaffeMaskineProjekt.DomainModels\KaffeMaskineProjekt.DomainModels.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>
