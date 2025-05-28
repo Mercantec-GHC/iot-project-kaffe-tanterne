@@ -168,7 +168,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         {
             // Only return the first order with HasBeenServed == Served, or 404 if none
             var firstOrder = await _context.Orders
-                .Where(o => o.HasBeenServed == OrderStatus.Served)
+                .Where(o => o.HasBeenServed == OrderStatus.Handling)
                 .OrderBy(o => o.Id)
                 .Include(o => o.Recipe)
                 .FirstOrDefaultAsync();
