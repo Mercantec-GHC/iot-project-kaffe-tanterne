@@ -40,6 +40,7 @@ void setup() {
 
 void loop() {
     ScaleLoop();
+    //ScaleCalibrationLoop();
 
     unsigned long now = millis();
     if (now - lastApiCall >= apiInterval) {
@@ -66,50 +67,26 @@ void loop() {
                     measurementApi.getIngredients(ingrBuffer, sizeof(ingrBuffer));
                     waterIngredientId = measurementApi.findIngredientId(ingrBuffer, "Water");
                 }
-                // Find or create Water measurement
-                waterId = measurementApi.findMeasurementId(buffer, "Water");
-                if (waterId == -1 && waterIngredientId != -1) {
+                // Always create a new Water measurement
+                if (waterIngredientId != -1) {
                     int measId = measurementApi.createMeasurement(waterIngredientId, getWaterWeight());
                     Serial.print("Created Water measurement ID: "); Serial.println(measId);
-                    if (measId != -1) waterId = measId;
-                    else {
-                        delay(1000);
-                        measurementApi.getMeasurements(buffer, sizeof(buffer));
-                        waterId = measurementApi.findMeasurementId(buffer, "Water");
-                    }
                 }
 
                 // Find or create Coffee ingredient
-                coffeeIngredientId = measurementApi.findIngredientId(ingrBuffer, "Coffee");
+                coffeeIngredientId = measurementApi.findIngredientId(ingrBuffer, "Instant Coffee");
                 if (coffeeIngredientId == -1) {
                     Serial.println("Coffee ingredient not found, creating...");
-                    coffeeIngredientId = measurementApi.createIngredient("Coffee");
+                    coffeeIngredientId = measurementApi.createIngredient("Instant Coffee");
                     Serial.print("Created Coffee ingredient ID: "); Serial.println(coffeeIngredientId);
                     delay(500);
                     measurementApi.getIngredients(ingrBuffer, sizeof(ingrBuffer));
-                    coffeeIngredientId = measurementApi.findIngredientId(ingrBuffer, "Coffee");
+                    coffeeIngredientId = measurementApi.findIngredientId(ingrBuffer, "Instant Coffee");
                 }
-                // Find or create Coffee measurement
-                coffeeId = measurementApi.findMeasurementId(buffer, "Coffee");
-                if (coffeeId == -1 && coffeeIngredientId != -1) {
+                // Always create a new Coffee measurement
+                if (coffeeIngredientId != -1) {
                     int measId = measurementApi.createMeasurement(coffeeIngredientId, getCoffeeWeight());
                     Serial.print("Created Coffee measurement ID: "); Serial.println(measId);
-                    if (measId != -1) coffeeId = measId;
-                    else {
-                        delay(1000);
-                        measurementApi.getMeasurements(buffer, sizeof(buffer));
-                        coffeeId = measurementApi.findMeasurementId(buffer, "Coffee");
-                    }
-                }
-
-                // PUT updates for water and coffee
-                if (waterId != -1 && waterIngredientId != -1) {
-                    int resp1 = measurementApi.updateMeasurement(waterId, waterIngredientId, getWaterWeight());
-                    Serial.print("PUT water response: "); Serial.println(resp1);
-                }
-                if (coffeeId != -1 && coffeeIngredientId != -1) {
-                    int resp2 = measurementApi.updateMeasurement(coffeeId, coffeeIngredientId, getCoffeeWeight());
-                    Serial.print("PUT coffee response: "); Serial.println(resp2);
                 }
             }
         }

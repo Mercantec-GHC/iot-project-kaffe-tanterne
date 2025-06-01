@@ -4,29 +4,29 @@ HX711 scale1;
 HX711 scale2;
 
 //  adjust pins if needed
-uint8_t scale1DataPin = 4;
-uint8_t scale1ClockPin = 5;
-uint8_t scale2DataPin = 2;
-uint8_t scale2ClockPin = 3;
+uint8_t scaleWaterDataPin = 4;
+uint8_t scaleWaterClockPin = 5;
+uint8_t scaleCoffeeDataPin = 2;
+uint8_t scaleCoffeeClockPin = 3;
 
 float w1, w2, x1, x2, previous = 0;
 
 
 void ScaleStart()
 {
-  scale1.begin(scale1DataPin, scale1ClockPin);
-  scale2.begin(scale2DataPin, scale2ClockPin);
+  scale1.begin(scaleWaterDataPin, scaleWaterClockPin);
+  scale2.begin(scaleCoffeeDataPin, scaleCoffeeClockPin);
 
   Serial.print("UNITS: ");
   Serial.println(scale1.get_units(10));
   Serial.println(scale2.get_units(10));
 
   //use calibration file for reference
-  scale1.set_scale(200.300262); 
-  scale1.set_offset(352716);
+  scale1.set_scale(200.652954); 
+  scale1.set_offset(507377);
   scale1.tare();
-  scale2.set_scale(207.454300);
-  scale2.set_offset(512567);
+  scale2.set_scale(150.398026);
+  scale2.set_offset(520905);
   scale2.tare();
   
   //print first measurement, to prove connection
