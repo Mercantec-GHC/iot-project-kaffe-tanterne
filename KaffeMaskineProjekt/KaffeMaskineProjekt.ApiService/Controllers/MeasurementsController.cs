@@ -82,9 +82,10 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         public async Task<IActionResult> WaterLevel()
         {
             // Return in percentage the current water level
-            var totalWater = await _context.Measurements
+            var totalWater = (await _context.Measurements
                 .Where(m => m.Ingredient.Name == "Water")
-                .SumAsync(m => m.Value);
+                .OrderByDescending(m => m.Time)
+                .FirstOrDefaultAsync())?.Value ?? 0;
 
             var maxWater = 1600; // Assuming the maximum water level is 1600g
 
@@ -103,9 +104,10 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         public async Task<IActionResult> CoffeeLevel()
         {
             // Return in percentage the current coffee level
-            var totalCoffee = await _context.Measurements
+            var totalCoffee = (await _context.Measurements
                 .Where(m => m.Ingredient.Name == "Instant Coffee")
-                .SumAsync(m => m.Value);
+                .OrderByDescending(m => m.Time)
+                .FirstOrDefaultAsync())?.Value ?? 0;
             var maxCoffee = 50; // Assuming the maximum coffee level is 50g
             double coffeeLevelPercentage = (totalCoffee / (double)maxCoffee) * 100;
 
