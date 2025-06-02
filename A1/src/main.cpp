@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "network.h"
 #include "powerplugapi.h"
-#include "testapi.h"
+#include "serveapi.h"
 #include "WaterPump.h"
 #include "CoffeeDispenser.h"
 
@@ -13,7 +13,7 @@ const int apiPort = 8006;
 const char* socketaddress = "192.168.1.151";
 
 Network network(ssid, password);
-TestApi testApi(network, apiHost, apiKey, apiPort);
+ServeApi serveApi(network, apiHost, apiKey, apiPort);
 PowerPlugApi powerPlugApi(network, socketaddress);
 
 void setup() {
@@ -33,30 +33,34 @@ void setup() {
 
 void loop() {
 
+  TemperatureRead();
 
-  if (temp > 70.0) {
+  if (temp > 90.0) {
     powerPlugApi.toggleOff();
   }
+    
 
   //CoffeeDispenserLoop();
 
+  
   Order order;
   // Find the first order that is Handling (not Served yet)
-  if (testApi.getBusyOrder(&order) == 1) {
+  if (serveApi.getBusyOrder(&order) == 1) {
     Serial.print("Got handling order: ");
     Serial.print(order.id);
     Serial.print(" - ");
     Serial.println(order.name);
+    WaterPumpLoop();
   } else {
-    Serial.println("No handling order found.");
+    Serial.println(" ");
   }
 
-  WaterPumpLoop();
-
   // Mark this order as served (if found)
-  if (order.id != 0) {
-    int resp = testApi.markAsServed(&order);
-    Serial.print("Mark as served response: ");
-    Serial.println(resp);
+  if (isDone == true) {
+    if (order.id != 0) {
+      int resp = serveApi.markAsServed(&order);
+      Serial.print("Mark as served response: ");
+      Serial.println(resp);
+    }
   }
 }

@@ -5,8 +5,10 @@
 
 extern DS18B20 ds;
 extern float temp;
+extern bool isDone;
 
 void WaterPumpSetup();
+void TemperatureRead();
 void WaterPumpLoop();
 
 #endif // WaterPump_h

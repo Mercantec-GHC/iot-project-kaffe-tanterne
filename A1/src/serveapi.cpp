@@ -1,11 +1,11 @@
-#include "testapi.h"
+#include "serveapi.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-TestApi::TestApi(Network &network, const char *host, const char *apiKey, const int apiPort)
+ServeApi::ServeApi(Network &network, const char *host, const char *apiKey, const int apiPort)
     : _network(network), _host(host), _apiKey(apiKey), _apiPort(apiPort) {}
 
-bool TestApi::checkApiConnection()
+bool ServeApi::checkApiConnection()
 {
     //DEBUG
     return true;
@@ -19,7 +19,7 @@ bool TestApi::checkApiConnection()
     return true;
 }
 
-int TestApi::sendDataToApi(const char* endpoint, const char* data) {
+int ServeApi::sendDataToApi(const char* endpoint, const char* data) {
     WiFiClient& client = _network.getClient();
     int responseCode = 0;
     if (client.connected()) {
@@ -47,7 +47,7 @@ int TestApi::sendDataToApi(const char* endpoint, const char* data) {
     return responseCode;
 }
 
-int TestApi::getOrderList(Order* orders, int maxOrders) {
+int ServeApi::getOrderList(Order* orders, int maxOrders) {
     WiFiClient& client = _network.getClient();
     if (!client.connect(_host, _apiPort)) {
         Serial.println("Connection to API failed");
@@ -122,7 +122,7 @@ int TestApi::getOrderList(Order* orders, int maxOrders) {
     return count;
 }
 
-int TestApi::getBusyOrder(Order* order) {
+int ServeApi::getBusyOrder(Order* order) {
     WiFiClient& client = _network.getClient();
     if (!client.connect(_host, _apiPort)) {
         Serial.println("Connection to API failed");
@@ -186,7 +186,7 @@ int TestApi::getBusyOrder(Order* order) {
     }
     int id = doc["id"] | 0;
     if (id == 0) {
-        Serial.println("No served order found (id == 0).");
+        //Serial.println("No served order found (id == 0).");
         return 0;
     }
     String name = "Order";
@@ -197,7 +197,7 @@ int TestApi::getBusyOrder(Order* order) {
     return 1;
 }
 
-int TestApi::markAsServed(Order* order) {
+int ServeApi::markAsServed(Order* order) {
     if (!order || order->id == 0) {
         Serial.println("markAsServed: Invalid order");
         return 0;

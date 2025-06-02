@@ -1,5 +1,5 @@
-#ifndef TESTAPI_H
-#define TESTAPI_H
+#ifndef SERVEAPI_H
+#define SERVEAPI_H
 
 #include "network.h"
 
@@ -11,9 +11,9 @@ public:
     Order(int id, const String& name) : id(id), name(name) {}
 };
 
-class TestApi {
+class ServeApi {
 public:
-    TestApi(Network &network, const char *host, const char *apiKey, const int apiPort);
+    ServeApi(Network &network, const char *host, const char *apiKey, const int apiPort);
     bool checkApiConnection();
     int sendDataToApi(const char* endpoint, const char* data);
     int getOrderList(Order* orders, int maxOrders);
@@ -27,4 +27,4 @@ private:
     const int _apiPort;
 };
 
-#endif // TESTAPI_H
+#endif // ServeAPI_H
