@@ -1,8 +1,12 @@
 #include "HX711.h"
 
+/*This calibration file is taken from an external source,
+we have not written the code in this file,
+the original writer of this file is Rob Tillaart. */
+
 HX711 myScale;
 
-//  adjust pins if needed.
+//Adjust pins if needed.
 uint8_t dataPin = 2;
 uint8_t clockPin = 3;
 
@@ -15,15 +19,13 @@ void ScaleCalibrationStart()
 void calibrate()
 {
   Serial.println("\n\nCALIBRATION\n===========");
-  Serial.println("remove all weight from the loadcell");
-  //  flush Serial input
+  Serial.println("Remove all weight from the loadcell");
   while (Serial.available()) Serial.read();
 
-  Serial.println("and press enter\n");
+  Serial.println("And press enter\n");
   while (Serial.available() == 0);
 
-  Serial.println("Determine zero weight offset");
-  //  average 20 measurements.
+  Serial.println("Determine zero weight offset.");
   myScale.tare(20);
   int32_t offset = myScale.get_offset();
 
@@ -32,11 +34,10 @@ void calibrate()
   Serial.println();
 
 
-  Serial.println("place a weight on the loadcell");
-  //  flush Serial input
+  Serial.println("Place a weight on the loadcell.");
   while (Serial.available()) Serial.read();
 
-  Serial.println("enter the weight in (whole) grams and press enter");
+  Serial.println("Enter the weight in (whole) grams and press enter.");
   uint32_t weight = 0;
   while (Serial.peek() != '\n')
   {
