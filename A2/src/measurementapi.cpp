@@ -2,54 +2,72 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
+// Constructor
 MeasurementApi::MeasurementApi(Network& network, const char* host, const char* apiKey, const int apiPort)
     : _network(network), _host(host), _apiKey(apiKey), _apiPort(apiPort) {}
 
-//Helper to skip HTTP headers and read response body.
+// Helper to skip HTTP headers and read response body (robust, non-blocking, safe for Arduino)
 static int readHttpBody(WiFiClient& client, char* buffer, int bufferSize) {
-    String line;
-    while (client.connected()) {
-        line = client.readStringUntil('\n');
-        if (line == "\r" || line.length() == 1) {
-            break;
-        }
-    }
-
-    //Read the body into a String.
-    String body = "";
-    unsigned long timeout = millis();
-    while (client.connected() && (millis() - timeout < 2000)) {
-        while (client.available()) {
-            char c = client.read();
-            body += c;
-            timeout = millis();
+    // Wait for response (up to 5 seconds)
+    unsigned long startTime = millis();
+    while (!client.available()) {
+        if (millis() - startTime > 5000) {
+            Serial.println(">>> Client Timeout waiting for response!");
+            client.stop();
+            buffer[0] = '\0';
+            return 0;
         }
         delay(1);
     }
 
-    //Find the start of JSON. (Either '{' or '['.)
-    int jsonStart = body.indexOf('{');
-    int arrStart = body.indexOf('[');
-    int start = -1;
-    if (jsonStart == -1 && arrStart == -1) {
+    // Skip HTTP headers
+    String line;
+    while (client.connected() && client.available()) {
+        line = client.readStringUntil('\n');
+        if (line == "\r" || line.length() == 1) {
+            break;
+        }
+        // Safety: timeout check
+        if (millis() - startTime > 5000) {
+            Serial.println(">>> Timeout while reading headers!");
+            client.stop();
+            buffer[0] = '\0';
+            return 0;
+        }
+    }
+
+    // Read the body directly into the buffer
+    int idx = 0;
+    bool foundJsonStart = false;
+    while (client.connected() && (millis() - startTime < 7000)) {
+        while (client.available()) {
+            char c = client.read();
+            // Find the start of JSON ('{' or '[')
+            if (!foundJsonStart) {
+                if (c == '{' || c == '[') {
+                    foundJsonStart = true;
+                } else {
+                    continue; // skip until JSON start
+                }
+            }
+            if (idx < bufferSize - 1) {
+                buffer[idx++] = c;
+            } else {
+                // Buffer full
+                break;
+            }
+        }
+        if (!client.available()) delay(1);
+        if (idx >= bufferSize - 1) break;
+    }
+    buffer[idx] = '\0';
+    if (!foundJsonStart) {
         buffer[0] = '\0';
         return 0;
     }
-    if (jsonStart == -1) start = arrStart;
-    else if (arrStart == -1) start = jsonStart;
-    else start = (jsonStart < arrStart) ? jsonStart : arrStart;
-
-    body = body.substring(start);
-
-    //Copy the body to the buffer.
-    int len = body.length();
-    if (len >= bufferSize) len = bufferSize - 1;
-    body.toCharArray(buffer, bufferSize);
-    buffer[len] = '\0';
-    return len;
+    return idx;
 }
 
-//GET request to fetch already existing measurements.
 int MeasurementApi::getMeasurements(char* buffer, int bufferSize) {
     WiFiClient& client = _network.getClient();
     if (!client.connect(_host, _apiPort)) {
@@ -61,12 +79,15 @@ int MeasurementApi::getMeasurements(char* buffer, int bufferSize) {
     client.println("Connection: close");
     client.println();
 
+    Serial.println("GET Measurements request sent");
     int len = readHttpBody(client, buffer, bufferSize); 
+
+    Serial.print("GET Measurements Response: "); Serial.println(buffer);
     client.stop();
     return len;
 }
 
-//GET request to fetch already existing ingredients.
+// GET all ingredients
 int MeasurementApi::getIngredients(char* buffer, int bufferSize) {
     WiFiClient& client = _network.getClient();
     if (!client.connect(_host, _apiPort)) {
@@ -83,7 +104,7 @@ int MeasurementApi::getIngredients(char* buffer, int bufferSize) {
     return len;
 }
 
-//Find ingredientId by name from ingredients buffer.
+// Find ingredientId by name from ingredients buffer
 int MeasurementApi::findIngredientId(const char* buffer, const char* ingredientName) {
     StaticJsonDocument<2048> doc;
     DeserializationError error = deserializeJson(doc, buffer);
@@ -109,7 +130,6 @@ int MeasurementApi::findIngredientId(const char* buffer, const char* ingredientN
     return -1;
 }
 
-//Post request to create a new measurement.
 int MeasurementApi::createMeasurement(int ingredientId, int value) {
     WiFiClient& client = _network.getClient();
     if (!client.connect(_host, _apiPort)) {
@@ -139,7 +159,6 @@ int MeasurementApi::createMeasurement(int ingredientId, int value) {
     return -1;
 }
 
-//PUT request to update data for measurements. (No longer in use.)
 int MeasurementApi::updateMeasurement(int id, int ingredientId, int value) {
     if (id == -1 || ingredientId == -1) {
         Serial.println("updateMeasurement: Invalid ID");
@@ -182,7 +201,6 @@ int MeasurementApi::updateMeasurement(int id, int ingredientId, int value) {
     return code;
 }
 
-//PUT request to create a new ingredient. (This is for when the ingredient does not exist.)
 int MeasurementApi::createIngredient(const char* ingredientName) {
     WiFiClient& client = _network.getClient();
     if (!client.connect(_host, _apiPort)) {
@@ -204,7 +222,7 @@ int MeasurementApi::createIngredient(const char* ingredientName) {
     Serial.print("POST Ingredient Response: "); Serial.println(buffer);
     client.stop();
 
-    //Try to parse the new ingredient ID from the response.
+    // Try to parse the new ingredient ID from the response
     StaticJsonDocument<256> doc;
     DeserializationError error = deserializeJson(doc, buffer);
     if (!error && doc.is<JsonObject>() && doc.containsKey("id")) {
@@ -213,7 +231,6 @@ int MeasurementApi::createIngredient(const char* ingredientName) {
     return -1;
 }
 
-//Find measurementId by ingredient name from measurements buffer.
 int MeasurementApi::findMeasurementId(const char* buffer, const char* ingredientName) {
     StaticJsonDocument<2048> doc;
     DeserializationError error = deserializeJson(doc, buffer);
@@ -223,7 +240,7 @@ int MeasurementApi::findMeasurementId(const char* buffer, const char* ingredient
         return -1;
     }
 
-    //Handle root array or object with array property.
+    // Handle root array or object with array property
     JsonArray arr;
     if (doc.is<JsonArray>()) {
         arr = doc.as<JsonArray>();
