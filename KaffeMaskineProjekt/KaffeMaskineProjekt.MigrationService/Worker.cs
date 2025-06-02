@@ -119,12 +119,39 @@ public class Worker(
             HasBeenServed = OrderStatus.Served,
         };
 
-        Measurements measurements = new()
+        // Create some measurements for the first and last ingredients and make variations over the course of the last day
+        List<Measurements> measurements = new();
+
+
+        // We need to create a bunch over the course of the last day. Simulating a lot of measurements.
+        // We only do this for the first ingredient and the last ingredient, as the middle one is not used in any recipe.
+        var now = DateTime.UtcNow;
+        var firstIngredient = ingredients[0];
+        var lastIngredient = ingredients[2];
+
+        var firstIngredientTime = now.AddHours(-24); // Start 24 hours ago
+        var lastIngredientTime = now.AddHours(-24); // Start 24 hours ago
+
+        while (firstIngredientTime < now)
         {
-            Ingredient = ingredients[0],
-            Time = DateTime.Now.ToUniversalTime(),
-            Value = 5
-        };
+            // Add measurements for the first ingredient
+            measurements.Add(new Measurements
+            {
+                Ingredient = firstIngredient,
+                Time = firstIngredientTime,
+                Value = Random.Shared.Next(0, 50)
+            });
+            
+            firstIngredientTime = firstIngredientTime.AddMinutes(30); // Increase time by 30 minutes
+            // Add measurements for the last ingredient
+            measurements.Add(new Measurements
+            {
+                Ingredient = lastIngredient,
+                Time = lastIngredientTime,
+                Value = Random.Shared.Next(0, 1600)
+            });
+            lastIngredientTime = lastIngredientTime.AddMinutes(30); // Increase time by 30 minutes
+        }
 
         List<Statistics> statistics = [
             new()
@@ -150,7 +177,7 @@ public class Worker(
             await dbContext.Users.AddRangeAsync(users, cancellationToken);
             await dbContext.Recipes.AddRangeAsync(recipes, cancellationToken);
             await dbContext.Orders.AddAsync(order, cancellationToken);
-            await dbContext.Measurements.AddAsync(measurements, cancellationToken);
+            await dbContext.Measurements.AddRangeAsync(measurements, cancellationToken);
             await dbContext.Statistics.AddRangeAsync(statistics, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);

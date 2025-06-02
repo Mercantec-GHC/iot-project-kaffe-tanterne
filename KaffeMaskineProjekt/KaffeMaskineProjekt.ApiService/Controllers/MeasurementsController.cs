@@ -119,6 +119,83 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             return Ok(coffeeLevelPercentageRounded);
         }
 
+        // Return a list of objects containing data about the ingredients over the last (period) time split into (interval) intervals
+        [HttpGet]
+        public async Task<IActionResult> TimeSeriesData([FromQuery] string period, [FromQuery] string interval)
+        {
+            // Helper to parse period/interval strings like "1d", "12h", "30m"
+            TimeSpan ParseTimeSpan(string input)
+            {
+                if (string.IsNullOrWhiteSpace(input)) throw new ArgumentException("Value cannot be null or empty.");
+                input = input.Trim().ToLower();
+                if (input.EndsWith("d"))
+                    return TimeSpan.FromDays(double.Parse(input[..^1]));
+                if (input.EndsWith("h"))
+                    return TimeSpan.FromHours(double.Parse(input[..^1]));
+                if (input.EndsWith("m"))
+                    return TimeSpan.FromMinutes(double.Parse(input[..^1]));
+                throw new ArgumentException($"Invalid time format: {input}");
+            }
+
+            TimeSpan periodSpan, intervalSpan;
+            try
+            {
+                periodSpan = ParseTimeSpan(period);
+                intervalSpan = ParseTimeSpan(interval);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = $"Invalid period or interval: {ex.Message}" });
+            }
+            if (intervalSpan <= TimeSpan.Zero || periodSpan <= TimeSpan.Zero || intervalSpan > periodSpan)
+                return BadRequest(new { Message = "Interval and period must be positive, and interval must not exceed period." });
+
+            var periodStart = DateTime.UtcNow - periodSpan;
+            var periodEnd = DateTime.UtcNow;
+
+            var results = await _context.Measurements
+                .Include(m => m.Ingredient)
+                .Where(m => (m.Ingredient.Name == "Instant Coffee" || m.Ingredient.Name == "Water") && m.Time >= periodStart && m.Time <= periodEnd)
+                .ToListAsync();
+
+            var resultsWater = results.Where(m => m.Ingredient.Name == "Water")
+                .OrderBy(m => m.Time)
+                .Select(m => new { m.Time, m.Value })
+                .ToList();
+
+            var resultsCoffee = results.Where(m => m.Ingredient.Name == "Instant Coffee")
+                .OrderBy(m => m.Time)
+                .Select(m => new { m.Time, m.Value })
+                .ToList();
+
+            List<object> series = new();
+            int intervals = (int)Math.Ceiling(periodSpan.TotalSeconds / intervalSpan.TotalSeconds);
+            for (int i = 0; i < intervals; i++)
+            {
+                var intervalStart = periodEnd - intervalSpan * (i + 1);
+                var intervalEnd = periodEnd - intervalSpan * i;
+                var waterValue = resultsWater
+                    .Where(m => m.Time >= intervalStart && m.Time < intervalEnd)
+                    .Select(m => m.Value)
+                    .DefaultIfEmpty(0)
+                    .Average();
+                var coffeeValue = resultsCoffee
+                    .Where(m => m.Time >= intervalStart && m.Time < intervalEnd)
+                    .Select(m => m.Value)
+                    .DefaultIfEmpty(0)
+                    .Average();
+                series.Add(new
+                {
+                    Time = intervalStart,
+                    Water = Math.Round(waterValue),
+                    Coffee = Math.Round(coffeeValue)
+                });
+            }
+            // Reverse to chronological order
+            series.Reverse();
+            return Ok(series);
+        }
+
         public class CreateMeasurementsModel
         {
             public required int Value { get; set; }
