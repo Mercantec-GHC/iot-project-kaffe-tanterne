@@ -6,49 +6,66 @@
 MeasurementApi::MeasurementApi(Network& network, const char* host, const char* apiKey, const int apiPort)
     : _network(network), _host(host), _apiKey(apiKey), _apiPort(apiPort) {}
 
-// Helper to skip HTTP headers and read response body (A3-style robust)
+// Helper to skip HTTP headers and read response body (robust, non-blocking, safe for Arduino)
 static int readHttpBody(WiFiClient& client, char* buffer, int bufferSize) {
-    // Skip HTTP headers
-    String line;
-    while (client.connected()) {
-        line = client.readStringUntil('\n');
-        if (line == "\r" || line.length() == 1) {
-            break; // End of headers
-        }
-    }
-
-    // Read the body into a String
-    String body = "";
-    unsigned long timeout = millis();
-    while (client.connected() && (millis() - timeout < 2000)) {
-        while (client.available()) {
-            char c = client.read();
-            body += c;
-            timeout = millis(); // reset timeout on activity
+    // Wait for response (up to 5 seconds)
+    unsigned long startTime = millis();
+    while (!client.available()) {
+        if (millis() - startTime > 5000) {
+            Serial.println(">>> Client Timeout waiting for response!");
+            client.stop();
+            buffer[0] = '\0';
+            return 0;
         }
         delay(1);
     }
 
-    // Find the start of JSON (either '{' or '[')
-    int jsonStart = body.indexOf('{');
-    int arrStart = body.indexOf('[');
-    int start = -1;
-    if (jsonStart == -1 && arrStart == -1) {
+    // Skip HTTP headers
+    String line;
+    while (client.connected() && client.available()) {
+        line = client.readStringUntil('\n');
+        if (line == "\r" || line.length() == 1) {
+            break;
+        }
+        // Safety: timeout check
+        if (millis() - startTime > 5000) {
+            Serial.println(">>> Timeout while reading headers!");
+            client.stop();
+            buffer[0] = '\0';
+            return 0;
+        }
+    }
+
+    // Read the body directly into the buffer
+    int idx = 0;
+    bool foundJsonStart = false;
+    while (client.connected() && (millis() - startTime < 7000)) {
+        while (client.available()) {
+            char c = client.read();
+            // Find the start of JSON ('{' or '[')
+            if (!foundJsonStart) {
+                if (c == '{' || c == '[') {
+                    foundJsonStart = true;
+                } else {
+                    continue; // skip until JSON start
+                }
+            }
+            if (idx < bufferSize - 1) {
+                buffer[idx++] = c;
+            } else {
+                // Buffer full
+                break;
+            }
+        }
+        if (!client.available()) delay(1);
+        if (idx >= bufferSize - 1) break;
+    }
+    buffer[idx] = '\0';
+    if (!foundJsonStart) {
         buffer[0] = '\0';
         return 0;
     }
-    if (jsonStart == -1) start = arrStart;
-    else if (arrStart == -1) start = jsonStart;
-    else start = (jsonStart < arrStart) ? jsonStart : arrStart;
-
-    body = body.substring(start);
-
-    // Copy to buffer
-    int len = body.length();
-    if (len >= bufferSize) len = bufferSize - 1;
-    body.toCharArray(buffer, bufferSize);
-    buffer[len] = '\0';
-    return len;
+    return idx;
 }
 
 int MeasurementApi::getMeasurements(char* buffer, int bufferSize) {
@@ -62,7 +79,10 @@ int MeasurementApi::getMeasurements(char* buffer, int bufferSize) {
     client.println("Connection: close");
     client.println();
 
+    Serial.println("GET Measurements request sent");
     int len = readHttpBody(client, buffer, bufferSize); 
+
+    Serial.print("GET Measurements Response: "); Serial.println(buffer);
     client.stop();
     return len;
 }

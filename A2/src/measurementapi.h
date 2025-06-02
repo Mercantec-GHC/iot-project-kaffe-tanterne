@@ -20,4 +20,4 @@ private:
     const int _apiPort;
 };
 
-#endif
+#endif //MEASUREMENTAPI_H
