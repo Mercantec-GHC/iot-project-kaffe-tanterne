@@ -160,7 +160,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
             var user = await _context.Users.FindAsync(id);
             _context.Users.Remove(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok(user);
         }
     }

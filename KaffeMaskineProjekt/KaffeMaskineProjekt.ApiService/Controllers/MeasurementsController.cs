@@ -55,10 +55,10 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         // PUT: Measurements
         [HttpPut]
-        public IActionResult Edit([FromBody]EditMeasurementsModel measurements)
+        public async Task<IActionResult> Edit([FromBody]EditMeasurementsModel measurements)
         {
             _context.Measurements.Update(measurements.ToMeasurements());
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok(measurements);
         }
 

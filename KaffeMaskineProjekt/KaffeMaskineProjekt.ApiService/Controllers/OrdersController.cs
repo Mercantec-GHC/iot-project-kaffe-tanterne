@@ -159,7 +159,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
             var order = await _context.Orders.FindAsync(id);
             _context.Orders.Remove(order);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok(order);
         }
 

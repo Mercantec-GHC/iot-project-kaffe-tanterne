@@ -74,16 +74,16 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         public async Task<IActionResult> Create([FromBody] CreateStatisticsModel statistics)
         {
             _context.Statistics.Add(statistics.ToStatistics());
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok(statistics);
         }
 
         // PUT: Measurements
         [HttpPut]
-        public IActionResult Edit([FromBody] EditStatisticsModel statistics)
+        public async Task<IActionResult> Edit([FromBody] EditStatisticsModel statistics)
         {
             _context.Statistics.Update(statistics.ToStatistics());
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok(statistics);
         }
 
@@ -93,7 +93,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         {
             var statistics = await _context.Statistics.FindAsync(id);
             _context.Statistics.Remove(statistics);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok(statistics);
         }
 
