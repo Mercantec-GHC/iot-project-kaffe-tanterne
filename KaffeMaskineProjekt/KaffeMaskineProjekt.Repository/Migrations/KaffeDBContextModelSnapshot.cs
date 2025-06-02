@@ -72,8 +72,8 @@ namespace KaffeMaskineProjekt.Repository.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("HasBeenServed")
-                        .HasColumnType("boolean");
+                    b.Property<int>("HasBeenServed")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("timestamp with time zone");

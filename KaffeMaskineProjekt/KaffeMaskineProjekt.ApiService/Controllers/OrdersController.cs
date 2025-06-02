@@ -13,8 +13,6 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
     {
         private readonly KaffeDBContext _context;
 
-        private bool IsCurrentlyHandlingOrder = false;
-
         public OrdersController(KaffeDBContext context)
         {
             _context = context;
@@ -39,7 +37,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             var unservedOrders = await _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.Recipe)
-                .Where(o => !o.HasBeenServed)
+                .Where(o => o.HasBeenServed == OrderStatus.Pending)
                 .AsNoTracking()
                 .ToListAsync();
             return Ok(unservedOrders);
@@ -84,7 +82,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             if (user is null || recipe is null)
                 return BadRequest("Invalid UserId or RecipeId, Try again.");
 
-            var exists = await _context.Orders.AnyAsync(x => x.User.Id == userId && x.Recipe.Id == recipe.Id && !x.HasBeenServed);
+            var exists = await _context.Orders.AnyAsync(x => x.User.Id == userId && x.Recipe.Id == recipe.Id && x.HasBeenServed != OrderStatus.Served);
 
             if (exists)
                 return Conflict("The order you are trying to make already exists.");
@@ -131,7 +129,6 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
 
         //allows you to edit an order
         [HttpPut]
-        [Authorize]
         public async Task<IActionResult> Update([FromBody] EditOrderModel model)
         {
             if (!ModelState.IsValid)
@@ -166,19 +163,60 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             return Ok(order);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> SetBusy([FromBody] bool isBusy)
+        [HttpGet]
+        public async Task<IActionResult> FirstOrderIfBusy()
         {
-            IsCurrentlyHandlingOrder = isBusy;
-            return Ok(new { IsBusy = IsCurrentlyHandlingOrder });
+            // Only return the first order with HasBeenServed == Served, or 404 if none
+            var firstOrder = await _context.Orders
+                .Where(o => o.HasBeenServed == OrderStatus.Handling)
+                .OrderBy(o => o.Id)
+                .Include(o => o.Recipe)
+                .FirstOrDefaultAsync();
+
+            if (firstOrder == null)
+            {
+                return NotFound(new { Message = "No served orders found." });
+            }
+
+            // Return the Id and recipe name if available
+            return Ok(new { id = firstOrder.Id, recipe = new { name = firstOrder.Recipe?.Name ?? "" } });
         }
 
         [HttpGet]
-        public async Task<IActionResult> IsBusy()
+        public async Task<IActionResult> MachineBusy()
         {
-            return Ok(new { IsBusy = IsCurrentlyHandlingOrder });
+            // Check if there are any orders being handled
+            var isBusy = await _context.Orders.AnyAsync(o => o.HasBeenServed == OrderStatus.Handling);
+            return Ok(new { IsBusy = isBusy });
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> MarkAsServed(int id)
+        {
+            // Find the first unserved order
+            var firstOrder = await _context.Orders
+                .Where(o => o.HasBeenServed == OrderStatus.Handling)
+                .OrderBy(o => o.Id)
+                .FirstOrDefaultAsync();
+
+            if (firstOrder == null)
+            {
+                return NotFound(new { Message = "No unserved orders found." });
+            }
+
+            // Only allow marking as served if the id matches the first unserved order
+            if (firstOrder.Id != id)
+            {
+                return BadRequest(new { Message = "You can only mark the first unserved order as served." });
+            }
+
+            firstOrder.HasBeenServed = OrderStatus.Served;
+            _context.Orders.Update(firstOrder);
+            await _context.SaveChangesAsync();
+            return Ok(firstOrder);
         }
     }
+
     public class CreateOrderModel
     {
         public int RecipeId { get; set; }
@@ -188,7 +226,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             return new Order
             {
                 RecipeId = RecipeId,
-                HasBeenServed = false
+                HasBeenServed = OrderStatus.Pending
             };
         }
     }
@@ -197,7 +235,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
         public int Id { get; set; }
         public int UserId { get; set; }
         public int RecipeId { get; set; }
-        public bool HasBeenServed { get; set; }
+        public OrderStatus HasBeenServed { get; set; }
 
         public Order ToOrder(User user, Recipe recipe)
         {

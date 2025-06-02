@@ -54,7 +54,7 @@ int OrderApi::getOrderList(Order* orders, int maxOrders) {
     }
 
     // Send GET request
-    client.println("GET /api/Orders/Index HTTP/1.1");
+    client.println("GET /api/Orders/Unserved HTTP/1.1");
     client.println(String("Host: ") + _host);
     client.println("Connection: close");
     client.println();
@@ -111,12 +111,224 @@ int OrderApi::getOrderList(Order* orders, int maxOrders) {
     for (JsonObject obj : arr) {
         if (count >= maxOrders) break;
         int id = obj["id"] | 0;
+        int userId = obj.containsKey("user") && obj["user"].containsKey("id") ? obj["user"]["id"] : 0;
+        int recipeId = obj.containsKey("recipe") && obj["recipe"].containsKey("id") ? obj["recipe"]["id"] : 0;
         String name = "Order";
         if (obj.containsKey("recipe") && obj["recipe"].containsKey("name")) {
             name = obj["recipe"]["name"].as<String>();
         }
-        orders[count] = Order(id, name);
+        orders[count] = Order(id, name, userId, recipeId);
         count++;
     }
     return count;
+}
+
+int OrderApi::markOrderAsServed(int orderId) {
+    WiFiClient& client = _network.getClient();
+    String endpoint = String("/api/Orders/MarkAsServed/") + String(orderId);
+    if (!client.connect(_host, _apiPort)) {
+        Serial.println("Connection to API failed");
+        return 0;
+    }
+    // Send PUT request with no body
+    client.println(String("PUT ") + endpoint + " HTTP/1.1");
+    client.println(String("Host: ") + _host);
+    client.println("Connection: close");
+    client.println();
+
+    // Wait for response
+    unsigned long timeout = millis();
+    while (!client.available()) {
+        if (millis() - timeout > 5000) {
+            Serial.println(">>> Client Timeout !");
+            client.stop();
+            return 0;
+        }
+    }
+    // Read response code
+    int responseCode = 0;
+    while (client.available()) {
+        String line = client.readStringUntil('\n');
+        if (line.startsWith("HTTP/1.1")) {
+            responseCode = line.substring(9, 12).toInt();
+        }
+    }
+    client.stop();
+    return responseCode;
+}
+
+int OrderApi::editOrderSetServed(const Order& order) {
+    WiFiClient& client = _network.getClient();
+    const char* endpoint = "/api/Orders/Update";
+    if (!client.connect(_host, _apiPort)) {
+        Serial.println("Connection to API failed");
+        return 0;
+    }
+    // Prepare JSON body
+    String json = "{";
+    json += "\"Id\":" + String(order.id) + ",";
+    json += "\"UserId\":" + String(order.userId) + ",";
+    json += "\"RecipeId\":" + String(order.recipeId) + ",";
+    json += "\"HasBeenServed\":1"; // 1 = Served
+    json += "}";
+
+    client.println(String("PUT ") + endpoint + " HTTP/1.1");
+    client.println(String("Host: ") + _host);
+    client.println("Content-Type: application/json");
+    client.println("Connection: close");
+    client.print("Content-Length: ");
+    client.println(json.length());
+    client.println();
+    client.println(json);
+
+    // Wait for response
+    unsigned long timeout = millis();
+    while (!client.available()) {
+        if (millis() - timeout > 5000) {
+            Serial.println(">>> Client Timeout !");
+            client.stop();
+            return 0;
+        }
+    }
+    // Read response code
+    int responseCode = 0;
+    while (client.available()) {
+        String line = client.readStringUntil('\n');
+        if (line.startsWith("HTTP/1.1")) {
+            responseCode = line.substring(9, 12).toInt();
+        }
+    }
+    client.stop();
+    return responseCode;
+}
+
+bool OrderApi::isMachineBusy() {
+    WiFiClient& client = _network.getClient();
+    if (!client.connect(_host, _apiPort)) {
+        Serial.println("Connection to API failed (MachineBusy)");
+        return false;
+    }
+    client.println("GET /api/Orders/MachineBusy HTTP/1.1");
+    client.println(String("Host: ") + _host);
+    client.println("Connection: close");
+    client.println();
+
+    unsigned long timeout = millis();
+    while (!client.available()) {
+        if (millis() - timeout > 5000) {
+            Serial.println(">>> Client Timeout ! (MachineBusy)");
+            client.stop();
+            return false;
+        }
+    }
+    // Skip HTTP headers
+    String line;
+    while (client.available()) {
+        line = client.readStringUntil('\n');
+        if (line == "\r" || line.length() == 1) {
+            break;
+        }
+    }
+    // Read the body
+    String body = "";
+    while (client.available()) {
+        char c = client.read();
+        body += c;
+    }
+    client.stop();
+    // Parse for "IsBusy": true
+    return body.indexOf("IsBusy\":true") != -1;
+}
+
+int OrderApi::sufficientCoffeeAndWaterLevels() {
+    WiFiClient& client = _network.getClient();
+    if (!client.connect(_host, _apiPort)) {
+        Serial.println("Connection to API failed (SufficientLevels)");
+        return 0; // Assume sufficient if connection fails
+    }
+
+    // Send GET request for coffee level
+    client.println("GET /api/Measurements/CoffeeLevel HTTP/1.1");
+    client.println(String("Host: ") + _host);
+    client.println("Connection: close");
+    client.println();
+
+    unsigned long timeout = millis();
+    while (!client.available()) {
+        if (millis() - timeout > 5000) {
+            Serial.println(">>> Client Timeout ! (SufficientLevels)");
+            client.stop();
+            return 0; // Assume sufficient if timeout
+        }
+    }
+    // Skip HTTP headers
+    String line;
+    while (client.available()) {
+        line = client.readStringUntil('\n');
+        if (line == "\r" || line.length() == 1) {
+            break;
+        }
+    }
+
+    // Body should just contain the level value
+    String body = "";
+    while (client.available()) {
+        char c = client.read();
+        body += c;
+    }
+    client.stop();
+    body.trim(); // Remove any leading/trailing whitespace
+
+    // Parse the body as an integer
+    int coffeeLevel = body.toInt();
+
+    // Send GET request for water level
+    client.connect(_host, _apiPort); // Reconnect for the next request
+    client.println("GET /api/Measurements/WaterLevel HTTP/1.1");
+    client.println(String("Host: ") + _host);
+    client.println("Connection: close");
+    client.println();
+
+    timeout = millis();
+    while (!client.available()) {
+        if (millis() - timeout > 5000) {
+            Serial.println(">>> Client Timeout ! (SufficientLevels Water)");
+            client.stop();
+            return 0; // Assume sufficient if timeout
+        }
+    }
+
+    // Skip HTTP headers
+    while (client.available()) {
+        line = client.readStringUntil('\n');
+        if (line == "\r" || line.length() == 1) {
+            break;
+        }
+    }
+
+    // Body should just contain the level value
+    body = "";
+    while (client.available()) {
+        char c = client.read();
+        body += c;
+    }
+
+    client.stop();
+    body.trim(); // Remove any leading/trailing whitespace
+
+    // Parse the body as an integer
+    int waterLevel = body.toInt();
+
+
+    // Return the appropriate code based on levels
+    if (coffeeLevel < 10 && waterLevel < 10) {
+        return 3; // Insufficient both
+    } else if (coffeeLevel < 10) {
+        return 1; // Insufficient coffee
+    } else if (waterLevel < 10) {
+        return 2; // Insufficient water
+    }
+
+    
+    return 0; // Default to sufficient if no specific condition met
 }

@@ -5,13 +5,15 @@
 #include "menu.h"
 
 // WiFi credentials and API info
-const char* ssid = "WiFimodem-C1F9";
-const char* password = "bonkbonkbonk";
+const char* ssid = "MAGS-OLC";
+const char* password = "Merc1234!";
 const char* apiKey = "";
-const char* apiHost = "192.168.0.205";
+const char* apiHost = "10.133.51.125";
 const int apiPort = 8006;
 const char* socketaddress = "192.168.1.151";
-static unsigned long lastMenuOptionUpdate = 0;
+const int long updateMenuOptionsInterval = 10000; // 10 seconds
+static unsigned long lastMenuOptionUpdate = 30000;
+static unsigned long lastIngredientUpdate = 30000;
 
 MKRIoTCarrier carrier;
 Network network(ssid, password);
@@ -23,6 +25,9 @@ Order orders[5];
 MenuOption options[5];
 // Map menu index to order index
 int orderMenuMap[5];
+
+bool isBusy = false; // Flag to indicate if the machine is busy
+int levelsCode = 0; // Code for coffee and water levels (0 = sufficient, 1 = insufficient coffee, 2 = insufficient water, 3 = insufficient both)
 
 // Function to handle menu selection
 void handleMenuSelection(int index);
@@ -52,8 +57,60 @@ void loop() {
     orderApi.checkApiConnection();
   }
 
-  // Every 10 seconds, update the order list
-  if (millis() - lastMenuOptionUpdate > 10000) {
+  // Update the ingredient levels and machine status every half of the update interval
+  if (millis() - lastIngredientUpdate > (updateMenuOptionsInterval / 2)) {
+    lastIngredientUpdate = millis();
+    isBusy = orderApi.isMachineBusy();
+    levelsCode = orderApi.sufficientCoffeeAndWaterLevels(); // 0 = sufficient, 1 = insufficient coffee, 2 = insufficient water, 3 = insufficient both
+  }
+
+
+  // Check if the machine is busy
+  if (isBusy) {
+    // Show busy screen
+    carrier.display.fillScreen(carrier.display.color565(0, 0, 0));
+    carrier.display.setCursor(0, 0);
+    carrier.display.setTextColor(carrier.display.color565(255, 0, 0));
+    carrier.display.setTextSize(2);
+    carrier.display.println("Machine is busy!");
+    carrier.display.setTextSize(1);
+    carrier.display.setTextColor(carrier.display.color565(255, 255, 255));
+    carrier.display.println("");
+    carrier.display.println("Please wait for");
+    carrier.display.println("the current order");
+    carrier.display.println("to finish.");
+    delay(1000);
+    return;
+  } else if (levelsCode < 0)  // Check if there are sufficient coffee and/or water levels
+  {
+    // Show insufficient levels screen
+    carrier.display.fillScreen(carrier.display.color565(0, 0, 0));
+    carrier.display.setCursor(0, 0);
+    carrier.display.setTextColor(carrier.display.color565(255, 0, 0));
+    carrier.display.setTextSize(2);
+    if (levelsCode == 1) {
+      carrier.display.println("Insufficient coffee!");
+    } else if (levelsCode == 2) {
+      carrier.display.println("Insufficient water!");
+    } else {
+      carrier.display.println("Insufficient coffee and water!");
+    }
+    carrier.display.setTextSize(1);
+    carrier.display.setTextColor(carrier.display.color565(255, 255, 255));
+    carrier.display.println("");
+    carrier.display.println("Please refill the");
+    carrier.display.println("machine before");
+    carrier.display.println("placing an order.");
+    delay(1000);
+    return;
+  } else {
+    // Clear the display
+    carrier.display.fillScreen(carrier.display.color565(0, 0, 0));
+  }
+  
+
+  // Every (updateMenuOptionsInterval/1000) seconds, update the order list
+  if (millis() - lastMenuOptionUpdate > updateMenuOptionsInterval) {
     lastMenuOptionUpdate = millis();
     updateMenuOptions();
   }
@@ -71,8 +128,15 @@ void handleMenuSelection(int index) {
         Serial.print(orders[orderIdx].id);
         Serial.print(" - ");
         Serial.println(orders[orderIdx].name);
+
+        // Mark the order as served via the edit endpoint
+        int response = orderApi.editOrderSetServed(orders[orderIdx]);
+        Serial.print("EditOrderSetServed response code: ");
+        Serial.println(response);
+
         // Add your logic here to use the selected order
         powerPlugApi.toggleOn();
+
     }
 }
 
@@ -90,6 +154,11 @@ void updateMenuOptions() {
         orderMenuMap[i] = i; // Map menu index to order index
         Serial.print("Order: ");
         Serial.println(orders[i].name);
+    }
+    // Clear out any remaining menu options if the new order count is less than before
+    for (int i = orderCount; i < 5; ++i) {
+        options[i] = MenuOption("", nullptr);
+        orderMenuMap[i] = -1;
     }
     setMenuOptions(options, orderCount);
     Serial.println("Menu options updated.");

@@ -77,6 +77,46 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             return Ok(new { Message = "Measurement deleted successfully." });
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> WaterLevel()
+        {
+            // Return in percentage the current water level
+            var totalWater = await _context.Measurements
+                .Where(m => m.Ingredient.Name == "Water")
+                .SumAsync(m => m.Value);
+
+            var maxWater = 1600; // Assuming the maximum water level is 1600g
+
+            double waterLevelPercentage = (totalWater / (double)maxWater) * 100;
+
+            // Ensure the percentage is between 0 and 100
+            waterLevelPercentage = Math.Clamp(waterLevelPercentage, 0, 100);
+
+            // Return the water level percentage
+            int waterLevelPercentageRounded = (int)Math.Round(waterLevelPercentage, 0);
+
+            return Ok(waterLevelPercentageRounded);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CoffeeLevel()
+        {
+            // Return in percentage the current coffee level
+            var totalCoffee = await _context.Measurements
+                .Where(m => m.Ingredient.Name == "Instant Coffee")
+                .SumAsync(m => m.Value);
+            var maxCoffee = 50; // Assuming the maximum coffee level is 50g
+            double coffeeLevelPercentage = (totalCoffee / (double)maxCoffee) * 100;
+
+            // Ensure the percentage is between 0 and 100
+            coffeeLevelPercentage = Math.Clamp(coffeeLevelPercentage, 0, 100);
+            
+            // Return the coffee level percentage
+            int coffeeLevelPercentageRounded = (int)Math.Round(coffeeLevelPercentage, 0);
+            return Ok(coffeeLevelPercentageRounded);
+        }
+
         public class CreateMeasurementsModel
         {
             public required int Value { get; set; }
