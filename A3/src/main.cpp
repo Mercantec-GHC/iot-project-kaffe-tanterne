@@ -11,7 +11,9 @@ const char* apiKey = "";
 const char* apiHost = "10.133.51.125";
 const int apiPort = 8006;
 const char* socketaddress = "192.168.1.151";
-static unsigned long lastMenuOptionUpdate = 0;
+const int long updateMenuOptionsInterval = 10000; // 10 seconds
+static unsigned long lastMenuOptionUpdate = 30000;
+static unsigned long lastIngredientUpdate = 30000;
 
 MKRIoTCarrier carrier;
 Network network(ssid, password);
@@ -24,48 +26,13 @@ MenuOption options[5];
 // Map menu index to order index
 int orderMenuMap[5];
 
+bool isBusy = false; // Flag to indicate if the machine is busy
+int levelsCode = 0; // Code for coffee and water levels (0 = sufficient, 1 = insufficient coffee, 2 = insufficient water, 3 = insufficient both)
+
 // Function to handle menu selection
 void handleMenuSelection(int index);
 // Function to update the menu options
 void updateMenuOptions();
-
-bool isMachineBusy(Network& network, const char* host, int port) {
-    WiFiClient& client = network.getClient();
-    if (!client.connect(host, port)) {
-        Serial.println("Connection to API failed (MachineBusy)");
-        return false;
-    }
-    client.println("GET /api/Orders/MachineBusy HTTP/1.1");
-    client.println(String("Host: ") + host);
-    client.println("Connection: close");
-    client.println();
-
-    unsigned long timeout = millis();
-    while (!client.available()) {
-        if (millis() - timeout > 5000) {
-            Serial.println(">>> Client Timeout ! (MachineBusy)");
-            client.stop();
-            return false;
-        }
-    }
-    // Skip HTTP headers
-    String line;
-    while (client.available()) {
-        line = client.readStringUntil('\n');
-        if (line == "\r" || line.length() == 1) {
-            break;
-        }
-    }
-    // Read the body
-    String body = "";
-    while (client.available()) {
-        char c = client.read();
-        body += c;
-    }
-    client.stop();
-    // Parse for "IsBusy": true
-    return body.indexOf("IsBusy\":true") != -1;
-}
 
 void setup() {
   Serial.begin(9600);
@@ -90,8 +57,16 @@ void loop() {
     orderApi.checkApiConnection();
   }
 
+  // Update the ingredient levels and machine status every half of the update interval
+  if (millis() - lastIngredientUpdate > (updateMenuOptionsInterval / 2)) {
+    lastIngredientUpdate = millis();
+    isBusy = orderApi.isMachineBusy();
+    levelsCode = orderApi.sufficientCoffeeAndWaterLevels(); // 0 = sufficient, 1 = insufficient coffee, 2 = insufficient water, 3 = insufficient both
+  }
+
+
   // Check if the machine is busy
-  if (isMachineBusy(network, apiHost, apiPort)) {
+  if (isBusy) {
     // Show busy screen
     carrier.display.fillScreen(carrier.display.color565(0, 0, 0));
     carrier.display.setCursor(0, 0);
@@ -106,10 +81,36 @@ void loop() {
     carrier.display.println("to finish.");
     delay(1000);
     return;
+  } else if (levelsCode < 0)  // Check if there are sufficient coffee and/or water levels
+  {
+    // Show insufficient levels screen
+    carrier.display.fillScreen(carrier.display.color565(0, 0, 0));
+    carrier.display.setCursor(0, 0);
+    carrier.display.setTextColor(carrier.display.color565(255, 0, 0));
+    carrier.display.setTextSize(2);
+    if (levelsCode == 1) {
+      carrier.display.println("Insufficient coffee!");
+    } else if (levelsCode == 2) {
+      carrier.display.println("Insufficient water!");
+    } else {
+      carrier.display.println("Insufficient coffee and water!");
+    }
+    carrier.display.setTextSize(1);
+    carrier.display.setTextColor(carrier.display.color565(255, 255, 255));
+    carrier.display.println("");
+    carrier.display.println("Please refill the");
+    carrier.display.println("machine before");
+    carrier.display.println("placing an order.");
+    delay(1000);
+    return;
+  } else {
+    // Clear the display
+    carrier.display.fillScreen(carrier.display.color565(0, 0, 0));
   }
+  
 
-  // Every 10 seconds, update the order list
-  if (millis() - lastMenuOptionUpdate > 10000) {
+  // Every (updateMenuOptionsInterval/1000) seconds, update the order list
+  if (millis() - lastMenuOptionUpdate > updateMenuOptionsInterval) {
     lastMenuOptionUpdate = millis();
     updateMenuOptions();
   }

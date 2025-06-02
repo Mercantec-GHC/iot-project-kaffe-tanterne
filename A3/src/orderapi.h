@@ -21,7 +21,8 @@ public:
     int getOrderList(Order* orders, int maxOrders);
     int markOrderAsServed(int orderId);
     int editOrderSetServed(const Order& order);
-    // Future: parseOrderList, getOrderById, etc.
+    bool isMachineBusy();
+    int sufficientCoffeeAndWaterLevels(); // 0 = sufficient, 1 = insufficient coffee, 2 = insufficient water, 3 = insufficient both
 private:
     Network& _network;
     const char* _host;

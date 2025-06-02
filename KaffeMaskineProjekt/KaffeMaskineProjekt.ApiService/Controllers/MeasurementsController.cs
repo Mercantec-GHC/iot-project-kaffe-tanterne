@@ -106,7 +106,7 @@ namespace KaffeMaskineProjekt.ApiService.Controllers
             var totalCoffee = await _context.Measurements
                 .Where(m => m.Ingredient.Name == "Instant Coffee")
                 .SumAsync(m => m.Value);
-            var maxCoffee = 100; // Assuming the maximum coffee level is 100g
+            var maxCoffee = 50; // Assuming the maximum coffee level is 50g
             double coffeeLevelPercentage = (totalCoffee / (double)maxCoffee) * 100;
 
             // Ensure the percentage is between 0 and 100

@@ -1,10 +1,10 @@
 # Determine script directory and set project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$SCRIPT_DIR/.."
+REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 
 # Change to repo root if not already there
-if [ ! -f "$REPO_ROOT/KaffeMaskineProjekt.sln" ]; then
-    echo "Could not find repo root. Exiting."
+if [ ! -d "$REPO_ROOT/.git" ]; then
+    echo "Could not find git repo root. Exiting."
     exit 1
 fi
 cd "$REPO_ROOT"
