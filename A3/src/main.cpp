@@ -134,6 +134,8 @@ void handleMenuSelection(int index) {
         Serial.print("EditOrderSetServed response code: ");
         Serial.println(response);
 
+        isBusy = true; // Set the machine to busy state
+
         // Add your logic here to use the selected order
         powerPlugApi.toggleOn();
 
