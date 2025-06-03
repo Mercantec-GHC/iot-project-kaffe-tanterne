@@ -129,8 +129,8 @@ public class Worker(
         var firstIngredient = ingredients[0];
         var lastIngredient = ingredients[2];
 
-        var firstIngredientTime = now.AddHours(-24); // Start 24 hours ago
-        var lastIngredientTime = now.AddHours(-24); // Start 24 hours ago
+        var firstIngredientTime = now.AddHours(-1); // Start 24 hours ago
+        var lastIngredientTime = now.AddHours(-1); // Start 24 hours ago
 
         while (firstIngredientTime < now)
         {
